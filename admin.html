@@ -72,7 +72,7 @@
         </div>
 
         <div class="pt-6 border-t border-slate-800">
-            <a href="index.html" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 font-bold text-xs flex items-center gap-2 interactive-btn">
+            <a href="/index.html" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 font-bold text-xs flex items-center gap-2 interactive-btn">
                 <span class="material-symbols-outlined text-base">logout</span> Keluar ke Toko
             </a>
         </div>
@@ -80,6 +80,8 @@
 
     <!-- KONTEN UTAMA DASHBOARD -->
     <main class="flex-1 p-6 lg:p-10 space-y-8 overflow-y-auto">
+        
+        <!-- HEADER TOP BAR -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stitch-border pb-6">
             <div>
                 <h1 class="text-2xl font-black text-stitch-text" id="admin-page-title">Ringkasan Performa</h1>
@@ -115,6 +117,7 @@
                 </div>
             </div>
 
+            <!-- Ringkasan Quick View Pesanan Terbaru -->
             <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
                 <div class="flex justify-between items-center">
                     <h3 class="font-extrabold text-base text-stitch-text">Pesanan Terbaru Masuk</h3>
@@ -131,7 +134,9 @@
                                 <th class="p-3">KET (PROSES ORDERAN)</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-stitch-border" id="admin-orders-quick-table"></tbody>
+                        <tbody class="divide-y divide-stitch-border" id="admin-orders-quick-table">
+                            <!-- Injected JS -->
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -141,6 +146,7 @@
         <div id="section-products" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
                 <h3 class="font-extrabold text-base text-stitch-text">Daftar Produk Toko</h3>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs font-mono-stitch">
                         <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
@@ -152,7 +158,9 @@
                                 <th class="p-3">AKSI</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-product-table" class="divide-y divide-stitch-border"></tbody>
+                        <tbody id="admin-product-table" class="divide-y divide-stitch-border">
+                            <!-- Injected JS -->
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -165,6 +173,7 @@
                     <h3 class="font-extrabold text-base text-stitch-text">Semua Pesanan Masuk</h3>
                     <p class="text-xs text-stitch-muted">Update keterangan proses pengerjaan untuk memperbarui status pembeli.</p>
                 </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs font-mono-stitch">
                         <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
@@ -177,11 +186,14 @@
                                 <th class="p-3">KET (PROSES ORDERAN ADMIN)</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-orders-full-table" class="divide-y divide-stitch-border"></tbody>
+                        <tbody id="admin-orders-full-table" class="divide-y divide-stitch-border">
+                            <!-- Injected JS -->
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
     </main>
 
     <!-- MODAL TAMBAH / EDIT PRODUK -->
@@ -194,6 +206,7 @@
 
             <form onsubmit="handleSaveProduct(event)" class="space-y-3">
                 <input type="hidden" id="p-id" value="">
+
                 <div>
                     <label class="text-[10px] font-mono-stitch font-bold text-slate-400 uppercase">Nama Produk</label>
                     <input required id="p-title" type="text" placeholder="Contoh: Lumina T1 Camera" class="w-full mt-1 p-2.5 bg-slate-800 text-white placeholder-slate-400 rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-brand"/>
@@ -234,14 +247,18 @@
         </div>
     </div>
 
+    <!-- LOGIKA JAVASCRIPT FIX SUPABASE -->
     <script>
         const SUPABASE_URL = 'https://mmpufzzhumzgtkbsuuik.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_KZNxfS-6dYP4X1I16YLoAA_UeUPEcit';
+        
+        // MENGGUNAKAN NAMA VARIABLE 'supabaseClient' AGAR TIDAK DEKLARASI UDAH (SYNTAX ERROR FIX)
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let adminProducts = [];
         let adminOrders = [];
 
+        // 1. Fetch Initial Data dari Supabase
         async function fetchAllData() {
             try {
                 await Promise.all([loadProducts(), loadOrders()]);
@@ -258,8 +275,11 @@
                 .select('*')
                 .order('id', { ascending: false });
 
-            if (error) console.error('Error fetching products:', error.message);
-            else adminProducts = data || [];
+            if (error) {
+                console.error('Error fetching products:', error.message);
+            } else {
+                adminProducts = data || [];
+            }
         }
 
         async function loadOrders() {
@@ -281,6 +301,7 @@
             }
         }
 
+        // 2. Modifikasi / Simpan / Hapus Data
         async function handleSaveProduct(e) {
             e.preventDefault();
             const id = document.getElementById('p-id').value;
@@ -349,9 +370,9 @@
             }
         }
 
-        // Realtime Listener
+        // 3. Realtime Listener
         supabaseClient
-            .channel('db-changes-admin')
+            .channel('db-changes-v3')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
                 await loadProducts();
                 refreshAllUI();
@@ -365,6 +386,7 @@
             })
             .subscribe();
 
+        // 4. Navigation & UI Helpers (GLOBAL SCOPE)
         function switchAdminTab(tab) {
             document.getElementById('section-overview').classList.add('hidden');
             document.getElementById('section-products').classList.add('hidden');
@@ -547,6 +569,7 @@
             });
         }
 
+        // Mulai muat data saat halaman selesai dibaca
         fetchAllData();
     </script>
 </body>
