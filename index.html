@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeStore - Premium E-Commerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#00a86b',
+                            dark: '#008f5a',
+                            light: '#e6f7f0',
+                        },
+                        stitch: {
+                            bg: '#f8faf9',
+                            card: '#ffffff',
+                            sidebar: '#f3f6f4',
+                            border: '#e5e9e6',
+                            text: '#0f172a',
+                            muted: '#64748b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-mono-stitch { font-family: 'Space Mono', monospace; }
+
+        .page-transition {
+            animation: fadeIn 0.35s ease-in-out forwards;
+        }
+
+        .grid-animate {
+            animation: fadeInUp 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .interactive-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-btn:hover {
+            transform: translateY(-2px);
+        }
+        .interactive-btn:active {
+            transform: scale(0.96);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-[#f8faf9] text-stitch-text font-sans antialiased min-h-screen flex flex-col selection:bg-brand selection:text-white">
+
+    <!-- NAVBAR UTAMA -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stitch-border px-4 sm:px-6 lg:px-12 py-3.5 flex justify-between items-center transition-all">
+        <div class="flex items-center gap-8">
+            <button onclick="navigateTo('shop')" class="text-xl sm:text-2xl font-black text-brand tracking-tight flex items-center gap-2 interactive-btn">
+                <span class="material-symbols-outlined text-2xl sm:text-3xl">storefront</span> LuxeStore
+            </button>
+            <nav class="hidden md:flex gap-6 text-xs font-bold text-stitch-text">
+                <button onclick="navigateTo('shop')" class="text-brand border-b-2 border-brand pb-0.5 interactive-btn">Shop</button>
+                <a href="#" class="text-stitch-muted hover:text-stitch-text transition-colors interactive-btn">Kategori</a>
+                <a href="#" class="text-stitch-muted hover:text-stitch-text transition-colors interactive-btn">Koleksi</a>
+            </nav>
+        </div>
+
+        <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="relative hidden sm:block w-48 md:w-64">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stitch-muted text-lg">search</span>
+                <input id="shop-search" onkeyup="filterShop()" type="text" placeholder="Cari barang..." class="w-full pl-9 pr-4 py-2 bg-stitch-sidebar rounded-full border border-stitch-border text-xs focus:outline-none focus:border-brand transition-all"/>
+            </div>
+
+            <button onclick="toggleMobileFilter()" class="md:hidden p-2.5 bg-stitch-sidebar rounded-full border border-stitch-border text-stitch-text hover:bg-black/5 interactive-btn flex items-center justify-center" title="Filter Produk">
+                <span class="material-symbols-outlined text-lg">tune</span>
+            </button>
+
+            <button onclick="navigateTo('cart')" class="relative p-2.5 bg-stitch-sidebar rounded-full border border-stitch-border text-stitch-text hover:bg-black/5 interactive-btn" title="Lihat Keranjang">
+                <span class="material-symbols-outlined text-lg">shopping_bag</span>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-brand text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">0</span>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- KATALOG UTAMA (SHOP PAGE) -->
+    <div id="page-shop" class="page-transition max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full flex-1 flex flex-col md:flex-row gap-8 lg:gap-10">
+        
+        <aside class="hidden md:block w-56 shrink-0 space-y-6">
+            <div>
+                <h3 class="text-xs font-bold text-stitch-text mb-3 uppercase tracking-wider">Kategori Produk</h3>
+                <nav class="space-y-1.5 font-mono-stitch text-xs" id="category-nav">
+                    <button onclick="setFilterCategory('all', this)" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5 interactive-btn shadow-sm">
+                        <span class="material-symbols-outlined text-base">grid_view</span> Semua Produk
+                    </button>
+                    <button onclick="setFilterCategory('Tech Essentials', this)" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5 interactive-btn">
+                        <span class="material-symbols-outlined text-base">devices</span> Tech Essentials
+                    </button>
+                    <button onclick="setFilterCategory('Accessories', this)" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5 interactive-btn">
+                        <span class="material-symbols-outlined text-base">watch</span> Accessories
+                    </button>
+                    <button onclick="setFilterCategory('Modern Living', this)" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5 interactive-btn">
+                        <span class="material-symbols-outlined text-base">chair</span> Modern Living
+                    </button>
+                </nav>
+            </div>
+
+            <div class="pt-6 border-t border-stitch-border">
+                <h3 class="text-[11px] font-mono-stitch font-bold uppercase text-stitch-muted mb-3">Batas Harga Maksimal</h3>
+                <input id="price-slider" type="range" min="0" max="2500" value="2500" oninput="filterShop()" class="w-full accent-brand cursor-pointer"/>
+                <div class="flex justify-between text-xs font-mono-stitch text-stitch-muted mt-2">
+                    <span>$0</span>
+                    <span id="price-val" class="font-bold text-stitch-text">$2,500+</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 space-y-6">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-stitch-text">Katalog Pilihan</h2>
+                    <p class="text-xs font-mono-stitch text-stitch-muted mt-0.5" id="prod-counter">Menampilkan produk...</p>
+                </div>
+            </div>
+
+            <div class="block sm:hidden">
+                <input id="shop-search-mobile" onkeyup="filterShopMobile()" type="text" placeholder="Cari barang..." class="w-full px-4 py-2 bg-white rounded-xl border border-stitch-border text-xs focus:outline-none focus:border-brand"/>
+            </div>
+
+            <div id="shop-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"></div>
+        </main>
+    </div>
+
+
+    <!-- MODAL FILTER MOBILE -->
+    <div id="mobileFilterModal" class="fixed inset-0 bg-black/50 z-50 hidden md:hidden flex items-end backdrop-blur-sm transition-opacity">
+        <div class="bg-white w-full rounded-t-3xl p-6 relative shadow-2xl space-y-6 grid-animate max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-extrabold text-base text-stitch-text flex items-center gap-2">
+                    <span class="material-symbols-outlined text-brand">tune</span> Filter & Kategori
+                </h3>
+                <button onclick="toggleMobileFilter()" class="p-1 rounded-full hover:bg-gray-100"><span class="material-symbols-outlined">close</span></button>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold text-stitch-text mb-3 uppercase tracking-wider">Kategori Produk</h4>
+                <div class="space-y-1.5 font-mono-stitch text-xs" id="mobile-category-nav">
+                    <button onclick="setFilterCategoryMobile('all', this)" class="mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-base">grid_view</span> Semua Produk
+                    </button>
+                    <button onclick="setFilterCategoryMobile('Tech Essentials', this)" class="mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-base">devices</span> Tech Essentials
+                    </button>
+                    <button onclick="setFilterCategoryMobile('Accessories', this)" class="mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-base">watch</span> Accessories
+                    </button>
+                    <button onclick="setFilterCategoryMobile('Modern Living', this)" class="mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-base">chair</span> Modern Living
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-stitch-border">
+                <h4 class="text-[11px] font-mono-stitch font-bold uppercase text-stitch-muted mb-3">Batas Harga Maksimal</h4>
+                <input id="price-slider-mobile" type="range" min="0" max="2500" value="2500" oninput="filterShopMobile()" class="w-full accent-brand cursor-pointer"/>
+                <div class="flex justify-between text-xs font-mono-stitch text-stitch-muted mt-2">
+                    <span>$0</span>
+                    <span id="price-val-mobile" class="font-bold text-stitch-text">$2,500+</span>
+                </div>
+            </div>
+
+            <button onclick="toggleMobileFilter()" class="w-full py-3 bg-brand text-white font-bold text-xs rounded-xl shadow-md">
+                Terapkan Filter
+            </button>
+        </div>
+    </div>
+
+
+    <!-- PAGE KERANJANG -->
+    <div id="page-cart" class="hidden page-transition max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10 w-full flex-1">
+        <div class="mb-6 flex items-center gap-2 text-xs font-mono-stitch">
+            <button onclick="navigateTo('shop')" class="text-stitch-muted hover:text-brand flex items-center gap-1 interactive-btn">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> Kembali Belanja
+            </button>
+            <span class="text-stitch-border">/</span>
+            <span class="font-bold text-stitch-text">Keranjang Belanja</span>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-black text-stitch-text mb-8">Keranjang Belanja Anda</h1>
+
+        <div id="empty-cart-view" class="hidden text-center py-16 bg-white rounded-3xl border border-stitch-border space-y-4">
+            <div class="w-16 h-16 bg-stitch-sidebar text-stitch-muted rounded-full flex items-center justify-center mx-auto">
+                <span class="material-symbols-outlined text-3xl">shopping_bag</span>
+            </div>
+            <h3 class="text-lg font-bold text-stitch-text">Keranjang Anda Masih Kosong</h3>
+            <p class="text-xs text-stitch-muted">Temukan produk pilihan Anda di katalog kami.</p>
+            <button onclick="navigateTo('shop')" class="px-6 py-3 bg-brand text-white text-xs font-bold rounded-xl interactive-btn shadow-md">
+                Mulai Belanja
+            </button>
+        </div>
+
+        <div id="cart-content-view" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-4" id="cart-page-list"></div>
+
+            <div class="bg-white p-6 rounded-3xl border border-stitch-border/80 shadow-2xs h-fit space-y-5">
+                <h3 class="font-extrabold text-base border-b pb-3 text-stitch-text">Ringkasan Pesanan</h3>
+                
+                <div class="space-y-2.5 text-xs font-mono-stitch text-stitch-muted">
+                    <div class="flex justify-between">
+                        <span>Subtotal Item</span>
+                        <span id="page-cart-subtotal" class="font-bold text-stitch-text">$0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Estimasi Pajak (5%)</span>
+                        <span id="page-cart-tax" class="font-bold text-stitch-text">$0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Ongkos Kirim</span>
+                        <span class="text-brand font-bold">GRATIS</span>
+                    </div>
+                    <div class="border-t pt-3 flex justify-between text-sm font-sans font-black text-stitch-text">
+                        <span>Total Pemesanan</span>
+                        <span id="page-cart-total" class="text-brand text-lg font-mono-stitch">$0.00</span>
+                    </div>
+                </div>
+
+                <button onclick="openCheckoutModal()" class="w-full py-4 bg-brand text-white font-bold text-xs rounded-xl hover:bg-brand-dark interactive-btn shadow-md flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-base">shopping_cart_checkout</span>
+                    Lanjut Ke Pemesanan
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL DETAIL PRODUK -->
+    <div id="productDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white max-w-2xl w-full rounded-3xl p-6 relative shadow-2xl flex flex-col md:flex-row gap-6 grid-animate">
+            <button onclick="closeProductDetail()" class="absolute top-4 right-4 p-2 rounded-full bg-stitch-sidebar hover:bg-black/5 interactive-btn"><span class="material-symbols-outlined text-sm">close</span></button>
+            <img id="modal-img" class="w-full md:w-1/2 aspect-square object-cover rounded-2xl bg-stitch-sidebar" src="" alt=""/>
+            <div class="flex-1 flex flex-col justify-between space-y-4">
+                <div>
+                    <span id="modal-cat" class="text-[10px] font-mono-stitch font-bold text-brand uppercase tracking-widest">Category</span>
+                    <h2 id="modal-title" class="text-xl font-extrabold text-stitch-text mt-1">Title</h2>
+                    <p id="modal-price" class="text-xl font-black text-brand font-mono-stitch mt-1">$0</p>
+                    <p id="modal-stock" class="text-xs font-mono-stitch text-stitch-muted mt-1">Stok: -</p>
+                    <p id="modal-desc" class="text-xs text-stitch-muted mt-3 leading-relaxed">Description...</p>
+                </div>
+                <button id="modal-add-btn" class="w-full py-3.5 bg-brand text-white font-bold text-xs rounded-xl hover:bg-brand-dark interactive-btn shadow-md">
+                    + Tambahkan ke Keranjang
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL CHECKOUT (PEMESANAN WA) -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white max-w-md w-full rounded-3xl p-6 relative shadow-2xl space-y-5 grid-animate">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-extrabold text-base text-stitch-text">Konfirmasi Pemesanan</h3>
+                <button onclick="closeCheckoutModal()" class="p-1 rounded-full hover:bg-gray-100"><span class="material-symbols-outlined">close</span></button>
+            </div>
+
+            <form onsubmit="handleCheckoutSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Nama Lengkap</label>
+                    <input id="checkout-name" required type="text" placeholder="Ahmad Riza" class="w-full mt-1 p-2.5 bg-stitch-sidebar rounded-xl border border-stitch-border text-xs focus:outline-none focus:border-brand"/>
+                </div>
+                <div>
+                    <label class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Nomor HP / WhatsApp</label>
+                    <input id="checkout-phone" required type="tel" placeholder="081234567890" class="w-full mt-1 p-2.5 bg-stitch-sidebar rounded-xl border border-stitch-border text-xs focus:outline-none focus:border-brand"/>
+                </div>
+                <div>
+                    <label class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Metode Pemesanan</label>
+                    <select class="w-full mt-1 p-2.5 bg-stitch-sidebar rounded-xl border border-stitch-border text-xs focus:outline-none focus:border-brand">
+                        <option>Pesan via WhatsApp Direct</option>
+                    </select>
+                </div>
+                
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-3.5 bg-brand text-white font-bold text-xs rounded-xl hover:bg-brand-dark interactive-btn shadow-md flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-base">chat</span>
+                        Pesan via WhatsApp
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- FOOTER LEGAL & PROFESIONAL -->
+    <footer class="bg-white border-t border-stitch-border mt-auto">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12 py-10 lg:py-12">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 pb-8">
+                <div class="md:col-span-2 space-y-3">
+                    <h3 class="text-xl font-black text-stitch-text tracking-tight">LuxeStore</h3>
+                    <p class="text-xs text-stitch-muted leading-relaxed max-w-sm">
+                        Elevating everyday life through meticulously curated premium essentials. Designed for those who value form and function.
+                    </p>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="text-[11px] font-mono-stitch font-bold uppercase tracking-wider text-stitch-text">SHOP</h4>
+                    <ul class="space-y-2 text-xs font-medium text-stitch-muted">
+                        <li><a href="#" class="hover:text-brand transition-colors">New Arrivals</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Best Sellers</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Gift Guide</a></li>
+                    </ul>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="text-[11px] font-mono-stitch font-bold uppercase tracking-wider text-stitch-text">COMPANY</h4>
+                    <ul class="space-y-2 text-xs font-medium text-stitch-muted">
+                        <li><a href="#" class="hover:text-brand transition-colors">Our Story</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Sustainability</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Journal</a></li>
+                    </ul>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="text-[11px] font-mono-stitch font-bold uppercase tracking-wider text-stitch-text">SUPPORT</h4>
+                    <ul class="space-y-2 text-xs font-medium text-stitch-muted">
+                        <li><a href="#" class="hover:text-brand transition-colors">Track Order</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Returns</a></li>
+                        <li><a href="#" class="hover:text-brand transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-stitch-border/60 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono-stitch text-stitch-muted">
+                <p>© 2026 LuxeStore Global. Engineered for elegance.</p>
+                <div class="flex items-center gap-4">
+                    <button class="hover:text-stitch-text transition-colors"><span class="material-symbols-outlined text-lg">language</span></button>
+                    <button class="hover:text-stitch-text transition-colors"><span class="material-symbols-outlined text-lg">share</span></button>
+                    <button class="hover:text-stitch-text transition-colors"><span class="material-symbols-outlined text-lg">verified_user</span></button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+<!-- JavaScript Engine -->
+<script>
+    let products = [
+        { id: 1, title: "Lumina T1 Camera", price: 1299, category: "Tech Essentials", stock: 8, badge: "FEATURED", badgeColor: "bg-brand text-white", desc: "Kamera mirrorless premium dengan bodi serat karbon presisi tinggi dan sensor gambar generasi terbaru.", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600" },
+        { id: 2, title: "Cognac Portfolio", price: 650, category: "Accessories", stock: 12, badge: "READY TO SHIP", badgeColor: "bg-gray-100 text-stitch-muted", desc: "Tas dokumen berbahan kulit asli olahan tangan artisan Italia.", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600" },
+        { id: 3, title: "Apex Mech X Keyboard", price: 280, category: "Tech Essentials", stock: 2, badge: "STOK TERBATAS", badgeColor: "bg-red-50 text-red-600", desc: "Keyboard mekanikal nirkabel bodi aluminium kustom dengan tactile switch presisi.", image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600" },
+        { id: 4, title: "Verve Fragrance", price: 185, category: "Accessories", stock: 15, badge: "ORGANIK", badgeColor: "bg-emerald-50 text-emerald-600", desc: "Aroma kayu cendana dan vetiver segar ramah lingkungan.", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600" },
+        { id: 5, title: "Element Flask", price: 95, category: "Modern Living", stock: 20, badge: "TITANIUM", badgeColor: "bg-gray-100 text-stitch-muted", desc: "Botol vakum ganda bahan titanium super ringan.", image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600" },
+        { id: 6, title: "Orbital Desk Lamp", price: 320, category: "Modern Living", stock: 5, badge: "HANDMADE", badgeColor: "bg-amber-50 text-amber-700", desc: "Lampu meja LED berdesain arsitektural minimalis.", image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600" }
+    ];
+
+    let cart = [];
+    let activeCat = 'all';
+
+    function navigateTo(page) {
+        document.getElementById('page-shop').classList.add('hidden');
+        document.getElementById('page-cart').classList.add('hidden');
+
+        if(page === 'shop') {
+            document.getElementById('page-shop').classList.remove('hidden');
+        } else if(page === 'cart') {
+            document.getElementById('page-cart').classList.remove('hidden');
+            renderCartPage();
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderShop(items = products) {
+        const grid = document.getElementById('shop-grid');
+        grid.innerHTML = '';
+        
+        items.forEach((p, index) => {
+            const card = document.createElement('div');
+            card.className = "bg-white rounded-2xl overflow-hidden border border-stitch-border/80 card-hover flex flex-col justify-between grid-animate";
+            card.style.animationDelay = `${index * 0.05}s`;
+            card.innerHTML = `
+                <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
+                    <div class="relative aspect-square bg-stitch-sidebar p-3 overflow-hidden group">
+                        <img src="${p.image}" class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500" alt="${p.title}"/>
+                        ${p.badge ? `<span class="absolute top-5 left-5 text-[9px] font-mono-stitch font-bold px-2 py-0.5 rounded ${p.badgeColor}">${p.badge}</span>` : ''}
+                    </div>
+                    <div class="p-4 space-y-1">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-extrabold text-sm text-stitch-text">${p.title}</h3>
+                            <span class="font-mono-stitch font-bold text-brand text-sm">$${p.price}</span>
+                        </div>
+                        <p class="text-[10px] font-mono-stitch ${p.stock <= 3 ? 'text-red-500 font-bold' : 'text-stitch-muted'}">● STOK: ${p.stock} UNIT</p>
+                        <p class="text-xs text-stitch-muted line-clamp-2 pt-1">${p.desc}</p>
+                    </div>
+                </div>
+                <div class="p-4 pt-0">
+                    <button onclick="addToCart(${p.id})" ${p.stock <= 0 ? 'disabled' : ''} class="w-full py-2.5 ${p.stock <= 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-stitch-sidebar hover:bg-brand hover:text-white'} font-bold text-xs rounded-xl border border-stitch-border transition-all interactive-btn flex items-center justify-center gap-1">
+                        ${p.stock <= 0 ? 'Stok Habis' : '+ Tambahkan Ke Keranjang'}
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+        document.getElementById('prod-counter').innerText = `Menampilkan ${items.length} produk pilihan`;
+    }
+
+    function addToCart(id) {
+        const p = products.find(x => x.id === id);
+        
+        if (p.stock <= 0) {
+            alert("Maaf, stok produk ini sudah habis!");
+            return;
+        }
+
+        const exist = cart.find(x => x.id === id);
+        if(exist) {
+            if (exist.qty + 1 > p.stock) {
+                alert("Jumlah melebihi stok yang tersedia!");
+                return;
+            }
+            exist.qty += 1;
+        } else {
+            cart.push({ id: p.id, title: p.title, price: p.price, qty: 1, img: p.image, category: p.category });
+        }
+        
+        updateCartBadge();
+    }
+
+    function updateCartBadge() {
+        const count = cart.reduce((acc, item) => acc + item.qty, 0);
+        document.getElementById('cart-count').innerText = count;
+    }
+
+    function renderCartPage() {
+        const list = document.getElementById('cart-page-list');
+        const emptyView = document.getElementById('empty-cart-view');
+        const contentView = document.getElementById('cart-content-view');
+
+        if(cart.length === 0) {
+            emptyView.classList.remove('hidden');
+            contentView.classList.add('hidden');
+            return;
+        }
+
+        emptyView.classList.add('hidden');
+        contentView.classList.remove('hidden');
+        list.innerHTML = '';
+
+        let subtotal = 0;
+
+        cart.forEach((item, idx) => {
+            subtotal += item.price * item.qty;
+            list.innerHTML += `
+                <div class="bg-white p-4 rounded-2xl border border-stitch-border/80 flex items-center gap-4 grid-animate">
+                    <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover bg-stitch-sidebar"/>
+                    <div class="flex-1 space-y-1">
+                        <span class="text-[10px] font-mono-stitch font-bold text-brand uppercase">${item.category}</span>
+                        <h4 class="font-extrabold text-sm text-stitch-text">${item.title}</h4>
+                        <p class="text-xs font-mono-stitch font-bold text-brand">$${item.price}</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-stitch-sidebar p-1.5 rounded-xl font-mono-stitch text-xs">
+                        <button onclick="updateQty(${idx}, -1)" class="w-7 h-7 bg-white rounded-lg shadow-2xs font-bold hover:bg-gray-100 interactive-btn">-</button>
+                        <span class="w-6 text-center font-bold">${item.qty}</span>
+                        <button onclick="updateQty(${idx}, 1)" class="w-7 h-7 bg-white rounded-lg shadow-2xs font-bold hover:bg-gray-100 interactive-btn">+</button>
+                    </div>
+                    <button onclick="removeCartItem(${idx})" class="p-2 text-stitch-muted hover:text-red-500 interactive-btn" title="Hapus">
+                        <span class="material-symbols-outlined text-lg">delete</span>
+                    </button>
+                </div>
+            `;
+        });
+
+        const tax = subtotal * 0.05;
+        document.getElementById('page-cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+        document.getElementById('page-cart-tax').innerText = `$${tax.toFixed(2)}`;
+        document.getElementById('page-cart-total').innerText = `$${(subtotal + tax).toFixed(2)}`;
+    }
+
+    function updateQty(index, delta) {
+        const item = cart[index];
+        const product = products.find(p => p.id === item.id);
+
+        if (delta > 0 && item.qty + 1 > product.stock) {
+            alert("Jumlah melebihi stok yang tersedia!");
+            return;
+        }
+
+        item.qty += delta;
+        if(item.qty <= 0) cart.splice(index, 1);
+        updateCartBadge();
+        renderCartPage();
+    }
+
+    function removeCartItem(index) {
+        cart.splice(index, 1);
+        updateCartBadge();
+        renderCartPage();
+    }
+
+    function openProductDetail(id) {
+        const p = products.find(x => x.id === id);
+        document.getElementById('modal-img').src = p.image;
+        document.getElementById('modal-cat').innerText = p.category;
+        document.getElementById('modal-title').innerText = p.title;
+        document.getElementById('modal-price').innerText = `$${p.price}`;
+        document.getElementById('modal-stock').innerText = `Stok Tersedia: ${p.stock} Unit`;
+        document.getElementById('modal-desc').innerText = p.desc;
+        document.getElementById('modal-add-btn').onclick = () => { addToCart(p.id); closeProductDetail(); };
+        document.getElementById('productDetailModal').classList.remove('hidden');
+    }
+
+    function closeProductDetail() { document.getElementById('productDetailModal').classList.add('hidden'); }
+
+    function openCheckoutModal() {
+        if(cart.length === 0) return alert("Keranjang belanja kamu masih kosong!");
+        document.getElementById('checkoutModal').classList.remove('hidden');
+    }
+
+    function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
+
+    // FUNGSI CHECKOUT & BERKURANGNYA STOK OTOMATIS (VERSI BERSIH & FIX)
+    function handleCheckoutSubmit(e) {
+        e.preventDefault();
+        
+        // Ganti dengan nomor WA Toko kamu (format: 628xxx)
+        const phoneNumber = "6281234567890"; 
+
+        const name = document.getElementById('checkout-name').value;
+        const buyerPhone = document.getElementById('checkout-phone').value;
+
+        let subtotal = 0;
+        let itemDetails = "";
+
+        // 1. Kurangi stok produk secara langsung di array lokal & susun teks rincian
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * item.qty;
+            subtotal += itemTotal;
+            itemDetails += `${index + 1}. ${item.title} (${item.qty}x) - $${itemTotal}\n`;
+
+            // KURANGI STOK LOKAL
+            const targetProd = products.find(p => p.id === item.id);
+            if (targetProd) {
+                targetProd.stock -= item.qty;
+                if (targetProd.stock < 0) targetProd.stock = 0;
+            }
+        });
+
+        const tax = subtotal * 0.05;
+        const grandTotal = subtotal + tax;
+
+        // 2. Kirim Data Pesanan Lengkap ke Server jika Socket.io terhubung
+        if (typeof socket !== 'undefined' && socket.connected) {
+            socket.emit('client:new-order', {
+                cart: cart,
+                customer: name,
+                phone: buyerPhone,
+                total: grandTotal
+            });
+        }
+
+        // 3. Susun Teks Pesan WhatsApp
+        let message = `Halo Admin LuxeStore, saya ingin melakukan pemesanan:\n\n`;
+        message += `*Detail Pelanggan:*\n`;
+        message += `- Nama: ${name}\n`;
+        message += `- No. HP Pembeli: ${buyerPhone}\n\n`;
+        message += `*Rincian Pesanan:*\n${itemDetails}\n`;
+        message += `- Subtotal: $${subtotal.toFixed(2)}\n`;
+        message += `- Pajak (5%): $${tax.toFixed(2)}\n`;
+        message += `*Total Pemesanan: $${grandTotal.toFixed(2)}*\n\n`;
+        message += `Mohon segera diproses ya, terima kasih!`;
+
+        // 4. Render ulang tampilan Toko
+        renderShop();
+
+        // 5. Buka link WhatsApp
+        const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, '_blank');
+
+        // Reset keranjang
+        cart = [];
+        updateCartBadge();
+        closeCheckoutModal();
+        navigateTo('shop');
+    }
+
+    // TOGGLE & FILTER UNTUK MOBILE DRAWER
+    function toggleMobileFilter() {
+        document.getElementById('mobileFilterModal').classList.toggle('hidden');
+    }
+
+    function filterShop() {
+        const q = document.getElementById('shop-search').value.toLowerCase();
+        const maxP = parseFloat(document.getElementById('price-slider').value);
+        document.getElementById('price-val').innerText = `$${maxP}`;
+
+        const res = products.filter(p => {
+            return (activeCat === 'all' || p.category === activeCat) &&
+                   (p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) &&
+                   (p.price <= maxP);
+        });
+        renderShop(res);
+    }
+
+    function filterShopMobile() {
+        const q = document.getElementById('shop-search-mobile').value.toLowerCase();
+        const maxP = parseFloat(document.getElementById('price-slider-mobile').value);
+        document.getElementById('price-val-mobile').innerText = `$${maxP}`;
+
+        const res = products.filter(p => {
+            return (activeCat === 'all' || p.category === activeCat) &&
+                   (p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) &&
+                   (p.price <= maxP);
+        });
+        renderShop(res);
+    }
+
+    function setFilterCategory(cat, btnElement) {
+        activeCat = cat;
+        const buttons = document.querySelectorAll('#category-nav .cat-btn');
+        buttons.forEach(b => {
+            b.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5 interactive-btn";
+        });
+        btnElement.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5 interactive-btn shadow-sm";
+        filterShop();
+    }
+
+    function setFilterCategoryMobile(cat, btnElement) {
+        activeCat = cat;
+        const buttons = document.querySelectorAll('#mobile-category-nav .mob-cat-btn');
+        buttons.forEach(b => {
+            b.className = "mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5";
+        });
+        btnElement.className = "mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5";
+        filterShopMobile();
+    }
+
+    window.onload = () => { renderShop(); };
+</script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    // Mengambil data produk awal dari server Node.js
+    socket.on('init:products', (serverProducts) => {
+        products = serverProducts;
+        renderShop();
+    });
+
+    // Menambah produk baru dari admin secara realtime
+    socket.on('realtime:product-added', (newProduct) => {
+        products.push(newProduct);
+        renderShop();
+    });
+
+    // Menerima update stok produk dari server (misal jika ada pembeli lain yang checkout)
+    socket.on('realtime:stock-updated', (updatedProducts) => {
+        products = updatedProducts;
+        renderShop();
+    });
+</script>
+</body>
+</html>
