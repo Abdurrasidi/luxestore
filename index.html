@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -37,42 +40,15 @@
     </script>
     <style>
         .font-mono-stitch { font-family: 'Space Mono', monospace; }
-
-        .page-transition {
-            animation: fadeIn 0.35s ease-in-out forwards;
-        }
-
-        .grid-animate {
-            animation: fadeInUp 0.4s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .interactive-btn {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .interactive-btn:hover {
-            transform: translateY(-2px);
-        }
-        .interactive-btn:active {
-            transform: scale(0.96);
-        }
-
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08);
-        }
+        .page-transition { animation: fadeIn 0.35s ease-in-out forwards; }
+        .grid-animate { animation: fadeInUp 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .interactive-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .interactive-btn:hover { transform: translateY(-2px); }
+        .interactive-btn:active { transform: scale(0.96); }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08); }
     </style>
 </head>
 <body class="bg-[#f8faf9] text-stitch-text font-sans antialiased min-h-screen flex flex-col selection:bg-brand selection:text-white">
@@ -107,10 +83,8 @@
         </div>
     </header>
 
-
     <!-- KATALOG UTAMA (SHOP PAGE) -->
     <div id="page-shop" class="page-transition max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full flex-1 flex flex-col md:flex-row gap-8 lg:gap-10">
-        
         <aside class="hidden md:block w-56 shrink-0 space-y-6">
             <div>
                 <h3 class="text-xs font-bold text-stitch-text mb-3 uppercase tracking-wider">Kategori Produk</h3>
@@ -156,7 +130,6 @@
         </main>
     </div>
 
-
     <!-- MODAL FILTER MOBILE -->
     <div id="mobileFilterModal" class="fixed inset-0 bg-black/50 z-50 hidden md:hidden flex items-end backdrop-blur-sm transition-opacity">
         <div class="bg-white w-full rounded-t-3xl p-6 relative shadow-2xl space-y-6 grid-animate max-h-[85vh] overflow-y-auto">
@@ -200,7 +173,6 @@
         </div>
     </div>
 
-
     <!-- PAGE KERANJANG -->
     <div id="page-cart" class="hidden page-transition max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10 w-full flex-1">
         <div class="mb-6 flex items-center gap-2 text-xs font-mono-stitch">
@@ -229,7 +201,6 @@
 
             <div class="bg-white p-6 rounded-3xl border border-stitch-border/80 shadow-2xs h-fit space-y-5">
                 <h3 class="font-extrabold text-base border-b pb-3 text-stitch-text">Ringkasan Pesanan</h3>
-                
                 <div class="space-y-2.5 text-xs font-mono-stitch text-stitch-muted">
                     <div class="flex justify-between">
                         <span>Subtotal Item</span>
@@ -257,7 +228,6 @@
         </div>
     </div>
 
-
     <!-- MODAL DETAIL PRODUK -->
     <div id="productDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white max-w-2xl w-full rounded-3xl p-6 relative shadow-2xl flex flex-col md:flex-row gap-6 grid-animate">
@@ -278,8 +248,7 @@
         </div>
     </div>
 
-
-    <!-- MODAL CHECKOUT (PEMESANAN WA) -->
+    <!-- MODAL CHECKOUT -->
     <div id="checkoutModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white max-w-md w-full rounded-3xl p-6 relative shadow-2xl space-y-5 grid-animate">
             <div class="flex justify-between items-center border-b pb-3">
@@ -304,7 +273,7 @@
                 </div>
                 
                 <div class="pt-2">
-                    <button type="submit" class="w-full py-3.5 bg-brand text-white font-bold text-xs rounded-xl hover:bg-brand-dark interactive-btn shadow-md flex items-center justify-center gap-2">
+                    <button type="submit" id="checkout-submit-btn" class="w-full py-3.5 bg-brand text-white font-bold text-xs rounded-xl hover:bg-brand-dark interactive-btn shadow-md flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-base">chat</span>
                         Pesan via WhatsApp
                     </button>
@@ -313,8 +282,7 @@
         </div>
     </div>
 
-
-    <!-- FOOTER LEGAL & PROFESIONAL -->
+    <!-- FOOTER -->
     <footer class="bg-white border-t border-stitch-border mt-auto">
         <div class="max-w-7xl mx-auto px-6 lg:px-12 py-10 lg:py-12">
             <div class="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 pb-8">
@@ -330,7 +298,6 @@
                     <ul class="space-y-2 text-xs font-medium text-stitch-muted">
                         <li><a href="#" class="hover:text-brand transition-colors">New Arrivals</a></li>
                         <li><a href="#" class="hover:text-brand transition-colors">Best Sellers</a></li>
-                        <li><a href="#" class="hover:text-brand transition-colors">Gift Guide</a></li>
                     </ul>
                 </div>
 
@@ -338,16 +305,12 @@
                     <h4 class="text-[11px] font-mono-stitch font-bold uppercase tracking-wider text-stitch-text">COMPANY</h4>
                     <ul class="space-y-2 text-xs font-medium text-stitch-muted">
                         <li><a href="#" class="hover:text-brand transition-colors">Our Story</a></li>
-                        <li><a href="#" class="hover:text-brand transition-colors">Sustainability</a></li>
-                        <li><a href="#" class="hover:text-brand transition-colors">Journal</a></li>
                     </ul>
                 </div>
 
                 <div class="space-y-3">
                     <h4 class="text-[11px] font-mono-stitch font-bold uppercase tracking-wider text-stitch-text">SUPPORT</h4>
                     <ul class="space-y-2 text-xs font-medium text-stitch-muted">
-                        <li><a href="#" class="hover:text-brand transition-colors">Track Order</a></li>
-                        <li><a href="#" class="hover:text-brand transition-colors">Returns</a></li>
                         <li><a href="#" class="hover:text-brand transition-colors">Contact</a></li>
                     </ul>
                 </div>
@@ -355,376 +318,308 @@
 
             <div class="pt-6 border-t border-stitch-border/60 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono-stitch text-stitch-muted">
                 <p>© 2026 LuxeStore Global. Engineered for elegance.</p>
-                <div class="flex items-center gap-4">
-                    <button class="hover:text-stitch-text transition-colors"><span class="material-symbols-outlined text-lg">language</span></button>
-                    <button class="hover:text-stitch-text transition-colors"><span class="material-symbols-outlined text-lg">share</span></button>
-                    <button class="hover:text-stitch-text transition-colors"><span class="material-symbols-outlined text-lg">verified_user</span></button>
-                </div>
             </div>
         </div>
     </footer>
 
+    <!-- JavaScript Engine -->
+    <script>
+        const SUPABASE_URL = 'https://mmpufzzhumzgtkbsuuik.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_KZNxfS-6dYP4X1I16YLoAA_UeUPEcit';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<!-- JavaScript Engine -->
-<script>
-    let products = [
-        { id: 1, title: "Lumina T1 Camera", price: 1299, category: "Tech Essentials", stock: 8, badge: "FEATURED", badgeColor: "bg-brand text-white", desc: "Kamera mirrorless premium dengan bodi serat karbon presisi tinggi dan sensor gambar generasi terbaru.", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600" },
-        { id: 2, title: "Cognac Portfolio", price: 650, category: "Accessories", stock: 12, badge: "READY TO SHIP", badgeColor: "bg-gray-100 text-stitch-muted", desc: "Tas dokumen berbahan kulit asli olahan tangan artisan Italia.", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600" },
-        { id: 3, title: "Apex Mech X Keyboard", price: 280, category: "Tech Essentials", stock: 2, badge: "STOK TERBATAS", badgeColor: "bg-red-50 text-red-600", desc: "Keyboard mekanikal nirkabel bodi aluminium kustom dengan tactile switch presisi.", image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600" },
-        { id: 4, title: "Verve Fragrance", price: 185, category: "Accessories", stock: 15, badge: "ORGANIK", badgeColor: "bg-emerald-50 text-emerald-600", desc: "Aroma kayu cendana dan vetiver segar ramah lingkungan.", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600" },
-        { id: 5, title: "Element Flask", price: 95, category: "Modern Living", stock: 20, badge: "TITANIUM", badgeColor: "bg-gray-100 text-stitch-muted", desc: "Botol vakum ganda bahan titanium super ringan.", image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600" },
-        { id: 6, title: "Orbital Desk Lamp", price: 320, category: "Modern Living", stock: 5, badge: "HANDMADE", badgeColor: "bg-amber-50 text-amber-700", desc: "Lampu meja LED berdesain arsitektural minimalis.", image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600" }
-    ];
+        let products = [];
+        let cart = [];
+        let activeCat = 'all';
 
-    let cart = [];
-    let activeCat = 'all';
+        async function loadProductsFromSupabase() {
+            const { data, error } = await supabaseClient
+                .from('products')
+                .select('*')
+                .order('id', { ascending: false });
 
-    function navigateTo(page) {
-        document.getElementById('page-shop').classList.add('hidden');
-        document.getElementById('page-cart').classList.add('hidden');
-
-        if(page === 'shop') {
-            document.getElementById('page-shop').classList.remove('hidden');
-        } else if(page === 'cart') {
-            document.getElementById('page-cart').classList.remove('hidden');
-            renderCartPage();
+            if (!error && data) {
+                products = data;
+                filterShop();
+            }
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
 
-    function renderShop(items = products) {
-        const grid = document.getElementById('shop-grid');
-        grid.innerHTML = '';
-        
-        items.forEach((p, index) => {
-            const card = document.createElement('div');
-            card.className = "bg-white rounded-2xl overflow-hidden border border-stitch-border/80 card-hover flex flex-col justify-between grid-animate";
-            card.style.animationDelay = `${index * 0.05}s`;
-            card.innerHTML = `
-                <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
-                    <div class="relative aspect-square bg-stitch-sidebar p-3 overflow-hidden group">
-                        <img src="${p.image}" class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500" alt="${p.title}"/>
-                        ${p.badge ? `<span class="absolute top-5 left-5 text-[9px] font-mono-stitch font-bold px-2 py-0.5 rounded ${p.badgeColor}">${p.badge}</span>` : ''}
-                    </div>
-                    <div class="p-4 space-y-1">
-                        <div class="flex justify-between items-start">
-                            <h3 class="font-extrabold text-sm text-stitch-text">${p.title}</h3>
-                            <span class="font-mono-stitch font-bold text-brand text-sm">$${p.price}</span>
+        // Realtime sync untuk perubahan produk di Supabase
+        supabaseClient
+            .channel('db-changes-buyer')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
+                await loadProductsFromSupabase();
+            })
+            .subscribe();
+
+        function navigateTo(page) {
+            document.getElementById('page-shop').classList.add('hidden');
+            document.getElementById('page-cart').classList.add('hidden');
+
+            if(page === 'shop') {
+                document.getElementById('page-shop').classList.remove('hidden');
+            } else if(page === 'cart') {
+                document.getElementById('page-cart').classList.remove('hidden');
+                renderCartPage();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderShop(items = products) {
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = '';
+            
+            if (items.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-stitch-muted text-sm font-mono-stitch">Belum ada produk yang tersedia.</div>`;
+                document.getElementById('prod-counter').innerText = `Menampilkan 0 produk`;
+                return;
+            }
+
+            items.forEach((p, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl overflow-hidden border border-stitch-border/80 card-hover flex flex-col justify-between grid-animate";
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.innerHTML = `
+                    <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
+                        <div class="relative aspect-square bg-stitch-sidebar p-3 overflow-hidden group">
+                            <img src="${p.image}" class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500" alt="${p.title}"/>
                         </div>
-                        <p class="text-[10px] font-mono-stitch ${p.stock <= 3 ? 'text-red-500 font-bold' : 'text-stitch-muted'}">● STOK: ${p.stock} UNIT</p>
-                        <p class="text-xs text-stitch-muted line-clamp-2 pt-1">${p.desc}</p>
+                        <div class="p-4 space-y-1">
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-extrabold text-sm text-stitch-text">${p.title}</h3>
+                                <span class="font-mono-stitch font-bold text-brand text-sm">$${p.price}</span>
+                            </div>
+                            <p class="text-[10px] font-mono-stitch ${p.stock <= 3 ? 'text-red-500 font-bold' : 'text-stitch-muted'}">● STOK: ${p.stock} UNIT</p>
+                            <p class="text-xs text-stitch-muted line-clamp-2 pt-1">${p.desc || ''}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="p-4 pt-0">
-                    <button onclick="addToCart(${p.id})" ${p.stock <= 0 ? 'disabled' : ''} class="w-full py-2.5 ${p.stock <= 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-stitch-sidebar hover:bg-brand hover:text-white'} font-bold text-xs rounded-xl border border-stitch-border transition-all interactive-btn flex items-center justify-center gap-1">
-                        ${p.stock <= 0 ? 'Stok Habis' : '+ Tambahkan Ke Keranjang'}
-                    </button>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-        document.getElementById('prod-counter').innerText = `Menampilkan ${items.length} produk pilihan`;
-    }
-
-    function addToCart(id) {
-        const p = products.find(x => x.id === id);
-        
-        if (p.stock <= 0) {
-            alert("Maaf, stok produk ini sudah habis!");
-            return;
+                    <div class="p-4 pt-0">
+                        <button onclick="addToCart(${p.id})" ${p.stock <= 0 ? 'disabled' : ''} class="w-full py-2.5 ${p.stock <= 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-stitch-sidebar hover:bg-brand hover:text-white'} font-bold text-xs rounded-xl border border-stitch-border transition-all interactive-btn flex items-center justify-center gap-1">
+                            ${p.stock <= 0 ? 'Stok Habis' : '+ Tambahkan Ke Keranjang'}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            document.getElementById('prod-counter').innerText = `Menampilkan ${items.length} produk pilihan`;
         }
 
-        const exist = cart.find(x => x.id === id);
-        if(exist) {
-            if (exist.qty + 1 > p.stock) {
+        function addToCart(id) {
+            const p = products.find(x => x.id === id);
+            
+            if (!p || p.stock <= 0) {
+                alert("Maaf, stok produk ini sudah habis!");
+                return;
+            }
+
+            const exist = cart.find(x => x.id === id);
+            if(exist) {
+                if (exist.qty + 1 > p.stock) {
+                    alert("Jumlah melebihi stok yang tersedia!");
+                    return;
+                }
+                exist.qty += 1;
+            } else {
+                cart.push({ id: p.id, title: p.title, price: p.price, qty: 1, img: p.image, category: p.category });
+            }
+            
+            updateCartBadge();
+        }
+
+        function updateCartBadge() {
+            const count = cart.reduce((acc, item) => acc + item.qty, 0);
+            document.getElementById('cart-count').innerText = count;
+        }
+
+        function renderCartPage() {
+            const list = document.getElementById('cart-page-list');
+            const emptyView = document.getElementById('empty-cart-view');
+            const contentView = document.getElementById('cart-content-view');
+
+            if(cart.length === 0) {
+                emptyView.classList.remove('hidden');
+                contentView.classList.add('hidden');
+                return;
+            }
+
+            emptyView.classList.add('hidden');
+            contentView.classList.remove('hidden');
+            list.innerHTML = '';
+
+            let subtotal = 0;
+
+            cart.forEach((item, idx) => {
+                subtotal += item.price * item.qty;
+                list.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl border border-stitch-border/80 flex items-center gap-4 grid-animate">
+                        <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover bg-stitch-sidebar"/>
+                        <div class="flex-1 space-y-1">
+                            <span class="text-[10px] font-mono-stitch font-bold text-brand uppercase">${item.category}</span>
+                            <h4 class="font-extrabold text-sm text-stitch-text">${item.title}</h4>
+                            <p class="text-xs font-mono-stitch font-bold text-brand">$${item.price}</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-stitch-sidebar p-1.5 rounded-xl font-mono-stitch text-xs">
+                            <button onclick="updateQty(${idx}, -1)" class="w-7 h-7 bg-white rounded-lg shadow-2xs font-bold hover:bg-gray-100 interactive-btn">-</button>
+                            <span class="w-6 text-center font-bold">${item.qty}</span>
+                            <button onclick="updateQty(${idx}, 1)" class="w-7 h-7 bg-white rounded-lg shadow-2xs font-bold hover:bg-gray-100 interactive-btn">+</button>
+                        </div>
+                        <button onclick="removeCartItem(${idx})" class="p-2 text-stitch-muted hover:text-red-500 interactive-btn" title="Hapus">
+                            <span class="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                    </div>
+                `;
+            });
+
+            const tax = subtotal * 0.05;
+            document.getElementById('page-cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('page-cart-tax').innerText = `$${tax.toFixed(2)}`;
+            document.getElementById('page-cart-total').innerText = `$${(subtotal + tax).toFixed(2)}`;
+        }
+
+        function updateQty(index, delta) {
+            const item = cart[index];
+            const product = products.find(p => p.id === item.id);
+
+            if (delta > 0 && product && item.qty + 1 > product.stock) {
                 alert("Jumlah melebihi stok yang tersedia!");
                 return;
             }
-            exist.qty += 1;
-        } else {
-            cart.push({ id: p.id, title: p.title, price: p.price, qty: 1, img: p.image, category: p.category });
-        }
-        
-        updateCartBadge();
-    }
 
-    function updateCartBadge() {
-        const count = cart.reduce((acc, item) => acc + item.qty, 0);
-        document.getElementById('cart-count').innerText = count;
-    }
-
-    function renderCartPage() {
-        const list = document.getElementById('cart-page-list');
-        const emptyView = document.getElementById('empty-cart-view');
-        const contentView = document.getElementById('cart-content-view');
-
-        if(cart.length === 0) {
-            emptyView.classList.remove('hidden');
-            contentView.classList.add('hidden');
-            return;
+            item.qty += delta;
+            if(item.qty <= 0) cart.splice(index, 1);
+            updateCartBadge();
+            renderCartPage();
         }
 
-        emptyView.classList.add('hidden');
-        contentView.classList.remove('hidden');
-        list.innerHTML = '';
-
-        let subtotal = 0;
-
-        cart.forEach((item, idx) => {
-            subtotal += item.price * item.qty;
-            list.innerHTML += `
-                <div class="bg-white p-4 rounded-2xl border border-stitch-border/80 flex items-center gap-4 grid-animate">
-                    <img src="${item.img}" class="w-20 h-20 rounded-xl object-cover bg-stitch-sidebar"/>
-                    <div class="flex-1 space-y-1">
-                        <span class="text-[10px] font-mono-stitch font-bold text-brand uppercase">${item.category}</span>
-                        <h4 class="font-extrabold text-sm text-stitch-text">${item.title}</h4>
-                        <p class="text-xs font-mono-stitch font-bold text-brand">$${item.price}</p>
-                    </div>
-                    <div class="flex items-center gap-2 bg-stitch-sidebar p-1.5 rounded-xl font-mono-stitch text-xs">
-                        <button onclick="updateQty(${idx}, -1)" class="w-7 h-7 bg-white rounded-lg shadow-2xs font-bold hover:bg-gray-100 interactive-btn">-</button>
-                        <span class="w-6 text-center font-bold">${item.qty}</span>
-                        <button onclick="updateQty(${idx}, 1)" class="w-7 h-7 bg-white rounded-lg shadow-2xs font-bold hover:bg-gray-100 interactive-btn">+</button>
-                    </div>
-                    <button onclick="removeCartItem(${idx})" class="p-2 text-stitch-muted hover:text-red-500 interactive-btn" title="Hapus">
-                        <span class="material-symbols-outlined text-lg">delete</span>
-                    </button>
-                </div>
-            `;
-        });
-
-        const tax = subtotal * 0.05;
-        document.getElementById('page-cart-subtotal').innerText = `$${subtotal.toFixed(2)}`;
-        document.getElementById('page-cart-tax').innerText = `$${tax.toFixed(2)}`;
-        document.getElementById('page-cart-total').innerText = `$${(subtotal + tax).toFixed(2)}`;
-    }
-
-    function updateQty(index, delta) {
-        const item = cart[index];
-        const product = products.find(p => p.id === item.id);
-
-        if (delta > 0 && item.qty + 1 > product.stock) {
-            alert("Jumlah melebihi stok yang tersedia!");
-            return;
+        function removeCartItem(index) {
+            cart.splice(index, 1);
+            updateCartBadge();
+            renderCartPage();
         }
 
-        item.qty += delta;
-        if(item.qty <= 0) cart.splice(index, 1);
-        updateCartBadge();
-        renderCartPage();
-    }
+        function openProductDetail(id) {
+            const p = products.find(x => x.id === id);
+            if(!p) return;
+            document.getElementById('modal-img').src = p.image;
+            document.getElementById('modal-cat').innerText = p.category;
+            document.getElementById('modal-title').innerText = p.title;
+            document.getElementById('modal-price').innerText = `$${p.price}`;
+            document.getElementById('modal-stock').innerText = `Stok Tersedia: ${p.stock} Unit`;
+            document.getElementById('modal-desc').innerText = p.desc || '';
+            document.getElementById('modal-add-btn').onclick = () => { addToCart(p.id); closeProductDetail(); };
+            document.getElementById('productDetailModal').classList.remove('hidden');
+        }
 
-    function removeCartItem(index) {
-        cart.splice(index, 1);
-        updateCartBadge();
-        renderCartPage();
-    }
+        function closeProductDetail() { document.getElementById('productDetailModal').classList.add('hidden'); }
 
-    function openProductDetail(id) {
-        const p = products.find(x => x.id === id);
-        document.getElementById('modal-img').src = p.image;
-        document.getElementById('modal-cat').innerText = p.category;
-        document.getElementById('modal-title').innerText = p.title;
-        document.getElementById('modal-price').innerText = `$${p.price}`;
-        document.getElementById('modal-stock').innerText = `Stok Tersedia: ${p.stock} Unit`;
-        document.getElementById('modal-desc').innerText = p.desc;
-        document.getElementById('modal-add-btn').onclick = () => { addToCart(p.id); closeProductDetail(); };
-        document.getElementById('productDetailModal').classList.remove('hidden');
-    }
+        function openCheckoutModal() {
+            if(cart.length === 0) return alert("Keranjang belanja kamu masih kosong!");
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
 
-    function closeProductDetail() { document.getElementById('productDetailModal').classList.add('hidden'); }
+        function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
 
-    function openCheckoutModal() {
-        if(cart.length === 0) return alert("Keranjang belanja kamu masih kosong!");
-        document.getElementById('checkoutModal').classList.remove('hidden');
-    }
+        async function handleCheckoutSubmit(e) {
+            e.preventDefault();
+            
+            const phoneNumber = "6281234567890"; 
+            const name = document.getElementById('checkout-name').value;
+            const buyerPhone = document.getElementById('checkout-phone').value;
 
-    function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
+            let subtotal = 0;
+            let itemDetails = "";
 
-    // FUNGSI CHECKOUT & BERKURANGNYA STOK OTOMATIS (VERSI BERSIH & FIX)
-    function handleCheckoutSubmit(e) {
-        e.preventDefault();
-        
-        // Ganti dengan nomor WA Toko kamu (format: 628xxx)
-        const phoneNumber = "6281234567890"; 
+            for (const item of cart) {
+                const itemTotal = item.price * item.qty;
+                subtotal += itemTotal;
+                itemDetails += `- ${item.title} (${item.qty}x)\n`;
 
-        const name = document.getElementById('checkout-name').value;
-        const buyerPhone = document.getElementById('checkout-phone').value;
-
-        let subtotal = 0;
-        let itemDetails = "";
-
-        // 1. Kurangi stok produk secara langsung di array lokal & susun teks rincian
-        cart.forEach((item, index) => {
-            const itemTotal = item.price * item.qty;
-            subtotal += itemTotal;
-            itemDetails += `${index + 1}. ${item.title} (${item.qty}x) - $${itemTotal}\n`;
-
-            // KURANGI STOK LOKAL
-            const targetProd = products.find(p => p.id === item.id);
-            if (targetProd) {
-                targetProd.stock -= item.qty;
-                if (targetProd.stock < 0) targetProd.stock = 0;
+                // Update stok di Supabase secara langsung
+                const targetProd = products.find(p => p.id === item.id);
+                if (targetProd) {
+                    const newStock = Math.max(0, targetProd.stock - item.qty);
+                    await supabaseClient.from('products').update({ stock: newStock }).eq('id', item.id);
+                }
             }
-        });
 
-        const tax = subtotal * 0.05;
-        const grandTotal = subtotal + tax;
+            const tax = subtotal * 0.05;
+            const grandTotal = subtotal + tax;
 
-        // 2. Kirim Data Pesanan Lengkap ke Server jika Socket.io terhubung
-        if (typeof socket !== 'undefined' && socket.connected) {
-            socket.emit('client:new-order', {
-                cart: cart,
-                customer: name,
-                phone: buyerPhone,
-                total: grandTotal
-            });
+            // Simpan pesanan ke Supabase
+            const { error } = await supabaseClient.from('orders').insert([{
+                customer_name: name,
+                total_amount: grandTotal,
+                status: 'MENUNGGU DIPROSES'
+            }]);
+
+            if (error) console.error('Gagal menyimpan pesanan:', error.message);
+
+            // Buka WhatsApp
+            let message = `Halo Admin LuxeStore, saya ingin melakukan pemesanan:\n\n`;
+            message += `*Detail Pelanggan:*\n- Nama: ${name}\n- HP: ${buyerPhone}\n\n`;
+            message += `*Rincian Pesanan:*\n${itemDetails}\n`;
+            message += `*Total Pemesanan: $${grandTotal.toFixed(2)}*\n\nMohon segera diproses, terima kasih!`;
+
+            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+
+            cart = [];
+            updateCartBadge();
+            closeCheckoutModal();
+            navigateTo('shop');
+            await loadProductsFromSupabase();
         }
 
-        // 3. Susun Teks Pesan WhatsApp
-        let message = `Halo Admin LuxeStore, saya ingin melakukan pemesanan:\n\n`;
-        message += `*Detail Pelanggan:*\n`;
-        message += `- Nama: ${name}\n`;
-        message += `- No. HP Pembeli: ${buyerPhone}\n\n`;
-        message += `*Rincian Pesanan:*\n${itemDetails}\n`;
-        message += `- Subtotal: $${subtotal.toFixed(2)}\n`;
-        message += `- Pajak (5%): $${tax.toFixed(2)}\n`;
-        message += `*Total Pemesanan: $${grandTotal.toFixed(2)}*\n\n`;
-        message += `Mohon segera diproses ya, terima kasih!`;
+        function toggleMobileFilter() {
+            document.getElementById('mobileFilterModal').classList.toggle('hidden');
+        }
 
-        // 4. Render ulang tampilan Toko
-        renderShop();
+        function filterShop() {
+            const q = (document.getElementById('shop-search')?.value || '').toLowerCase();
+            const maxP = parseFloat(document.getElementById('price-slider')?.value || 2500);
+            if(document.getElementById('price-val')) document.getElementById('price-val').innerText = `$${maxP}`;
 
-        // 5. Buka link WhatsApp
-        const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-        window.open(waUrl, '_blank');
+            const res = products.filter(p => {
+                return (activeCat === 'all' || p.category === activeCat) &&
+                       (p.title.toLowerCase().includes(q) || (p.desc && p.desc.toLowerCase().includes(q))) &&
+                       (p.price <= maxP);
+            });
+            renderShop(res);
+        }
 
-        // Reset keranjang
-        cart = [];
-        updateCartBadge();
-        closeCheckoutModal();
-        navigateTo('shop');
-    }
+        function filterShopMobile() {
+            const q = (document.getElementById('shop-search-mobile')?.value || '').toLowerCase();
+            const maxP = parseFloat(document.getElementById('price-slider-mobile')?.value || 2500);
+            if(document.getElementById('price-val-mobile')) document.getElementById('price-val-mobile').innerText = `$${maxP}`;
 
-    // TOGGLE & FILTER UNTUK MOBILE DRAWER
-    function toggleMobileFilter() {
-        document.getElementById('mobileFilterModal').classList.toggle('hidden');
-    }
+            const res = products.filter(p => {
+                return (activeCat === 'all' || p.category === activeCat) &&
+                       (p.title.toLowerCase().includes(q) || (p.desc && p.desc.toLowerCase().includes(q))) &&
+                       (p.price <= maxP);
+            });
+            renderShop(res);
+        }
 
-    function filterShop() {
-        const q = document.getElementById('shop-search').value.toLowerCase();
-        const maxP = parseFloat(document.getElementById('price-slider').value);
-        document.getElementById('price-val').innerText = `$${maxP}`;
+        function setFilterCategory(cat, btnElement) {
+            activeCat = cat;
+            const buttons = document.querySelectorAll('#category-nav .cat-btn');
+            buttons.forEach(b => {
+                b.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5 interactive-btn";
+            });
+            btnElement.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5 interactive-btn shadow-sm";
+            filterShop();
+        }
 
-        const res = products.filter(p => {
-            return (activeCat === 'all' || p.category === activeCat) &&
-                   (p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) &&
-                   (p.price <= maxP);
-        });
-        renderShop(res);
-    }
+        function setFilterCategoryMobile(cat, btnElement) {
+            activeCat = cat;
+            const buttons = document.querySelectorAll('#mobile-category-nav .mob-cat-btn');
+            buttons.forEach(b => {
+                b.className = "mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5";
+            });
+            btnElement.className = "mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5";
+            filterShopMobile();
+        }
 
-    function filterShopMobile() {
-        const q = document.getElementById('shop-search-mobile').value.toLowerCase();
-        const maxP = parseFloat(document.getElementById('price-slider-mobile').value);
-        document.getElementById('price-val-mobile').innerText = `$${maxP}`;
-
-        const res = products.filter(p => {
-            return (activeCat === 'all' || p.category === activeCat) &&
-                   (p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) &&
-                   (p.price <= maxP);
-        });
-        renderShop(res);
-    }
-
-    function setFilterCategory(cat, btnElement) {
-        activeCat = cat;
-        const buttons = document.querySelectorAll('#category-nav .cat-btn');
-        buttons.forEach(b => {
-            b.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5 interactive-btn";
-        });
-        btnElement.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5 interactive-btn shadow-sm";
-        filterShop();
-    }
-
-    function setFilterCategoryMobile(cat, btnElement) {
-        activeCat = cat;
-        const buttons = document.querySelectorAll('#mobile-category-nav .mob-cat-btn');
-        buttons.forEach(b => {
-            b.className = "mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-stitch-muted hover:bg-black/5 flex items-center gap-2.5";
-        });
-        btnElement.className = "mob-cat-btn w-full text-left px-3.5 py-2.5 rounded-xl bg-brand text-white font-bold flex items-center gap-2.5";
-        filterShopMobile();
-    }
-
-    window.onload = () => { renderShop(); };
-</script>
-
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    const socket = io();
-
-    // Mengambil data produk awal dari server Node.js
-    socket.on('init:products', (serverProducts) => {
-        products = serverProducts;
-        renderShop();
-    });
-
-    // Menambah produk baru dari admin secara realtime
-    socket.on('realtime:product-added', (newProduct) => {
-        products.push(newProduct);
-        renderShop();
-    });
-
-    // Menerima update stok produk dari server (misal jika ada pembeli lain yang checkout)
-    socket.on('realtime:stock-updated', (updatedProducts) => {
-        products = updatedProducts;
-        renderShop();
-    });
-</script>
-    <script>
-  const SUPABASE_URL = 'https://mmpufzzhumzgtkbsuuik.supabase.co/rest/v1/';
-  const SUPABASE_KEY = 'sb_publishable_KZNxfS-6dYP4X1I16YLoAA_UeUPEcit';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  // 1. Ambil Data Produk
-  async function loadProducts() {
-    const { data: products, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('id', { ascending: false });
-
-    if (!error) {
-      console.log('Data produk dari Supabase:', products);
-      // Panggil fungsi render UI kamu di sini
-    }
-  }
-
-  // 2. Fungsi Hapus Barang (Permanen)
-  async function deleteProduct(id) {
-    if (!confirm('Yakin ingin menghapus barang ini?')) return;
-
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      alert('Gagal hapus: ' + error.message);
-    } else {
-      alert('Berhasil dihapus permanen!');
-    }
-  }
-
-  // 3. Real-time Listener (Otomatis update tampilan saat ada perubahan)
-  supabase
-    .channel('products-channel')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-      loadProducts();
-    })
-    .subscribe();
-
-  // Load awal saat web dibuka
-  loadProducts();
-</script>
+        window.onload = () => { loadProductsFromSupabase(); };
+    </script>
 </body>
 </html>
