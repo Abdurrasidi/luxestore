@@ -338,15 +338,13 @@
                 .select('*')
                 .order('id', { ascending: false });
 
-            if (error) {
-                console.error("Gagal mengambil data pembeli:", error.message);
-            } else {
-                products = data || [];
+            if (!error && data) {
+                products = data;
                 filterShop();
             }
         }
 
-        // Realtime Listener untuk Halaman Pembeli
+        // Realtime sync untuk perubahan produk di Supabase
         supabaseClient
             .channel('db-changes-buyer')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
@@ -536,6 +534,7 @@
                 subtotal += itemTotal;
                 itemDetails += `- ${item.title} (${item.qty}x)\n`;
 
+                // Update stok di Supabase secara langsung
                 const targetProd = products.find(p => p.id === item.id);
                 if (targetProd) {
                     const newStock = Math.max(0, targetProd.stock - item.qty);
@@ -546,6 +545,7 @@
             const tax = subtotal * 0.05;
             const grandTotal = subtotal + tax;
 
+            // Simpan pesanan ke Supabase
             const { error } = await supabaseClient.from('orders').insert([{
                 customer_name: name,
                 total_amount: grandTotal,
@@ -554,6 +554,7 @@
 
             if (error) console.error('Gagal menyimpan pesanan:', error.message);
 
+            // Buka WhatsApp
             let message = `Halo Admin LuxeStore, saya ingin melakukan pemesanan:\n\n`;
             message += `*Detail Pelanggan:*\n- Nama: ${name}\n- HP: ${buyerPhone}\n\n`;
             message += `*Rincian Pesanan:*\n${itemDetails}\n`;
