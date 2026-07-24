@@ -504,5 +504,53 @@
             closeAddProductModal();
         }
     </script>
+    <!-- Masukkan library Supabase ini sebelum tag </head> atau di atas script utama -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const SUPABASE_URL = 'https://mmpufzzhumzgtkbsuuik.supabase.co/rest/v1/';
+  const SUPABASE_KEY = 'sb_publishable_KZNxfS-6dYP4X1I16YLoAA_UeUPEcit';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // 1. Ambil Data Produk
+  async function loadProducts() {
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('id', { ascending: false });
+
+    if (!error) {
+      console.log('Data produk dari Supabase:', products);
+      // Panggil fungsi render UI kamu di sini
+    }
+  }
+
+  // 2. Fungsi Hapus Barang (Permanen)
+  async function deleteProduct(id) {
+    if (!confirm('Yakin ingin menghapus barang ini?')) return;
+
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert('Gagal hapus: ' + error.message);
+    } else {
+      alert('Berhasil dihapus permanen!');
+    }
+  }
+
+  // 3. Real-time Listener (Otomatis update tampilan saat ada perubahan)
+  supabase
+    .channel('products-channel')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+      loadProducts();
+    })
+    .subscribe();
+
+  // Load awal saat web dibuka
+  loadProducts();
+</script>
 </body>
 </html>
