@@ -247,24 +247,32 @@
         </div>
     </div>
 
-    <!-- UTAMA LOGIKA JAVASCRIPT & SUPABASE INTEGRATION -->
+    <!-- LOGIKA JAVASCRIPT & SUPABASE INTEGRATION -->
     <script>
-        // 1. Inisialisasi Supabase Client
+        // Gunakan pencocokan aman agar variabel 'supabaseClient' tidak pernah berkonflik
         const SUPABASE_URL = 'https://mmpufzzhumzgtkbsuuik.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_KZNxfS-6dYP4X1I16YLoAA_UeUPEcit';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Buat instance unik untuk menghindari error "already been declared"
+        window.supabaseClient = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const db = window.supabaseClient;
 
         let adminProducts = [];
         let adminOrders = [];
 
-        // 2. Fetch Initial Data dari Supabase
+        // 1. Fetch Initial Data dari Supabase
         async function fetchAllData() {
-            await Promise.all([loadProducts(), loadOrders()]);
-            refreshAllUI();
+            try {
+                await Promise.all([loadProducts(), loadOrders()]);
+            } catch (err) {
+                console.error('Error saat memuat data awal:', err);
+            } finally {
+                refreshAllUI();
+            }
         }
 
         async function loadProducts() {
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('products')
                 .select('*')
                 .order('id', { ascending: false });
@@ -277,7 +285,7 @@
         }
 
         async function loadOrders() {
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('orders')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -295,7 +303,7 @@
             }
         }
 
-        // 3. Modifikasi / Simpan / Hapus Data di Supabase
+        // 2. Modifikasi / Simpan / Hapus Data
         async function handleSaveProduct(e) {
             e.preventDefault();
             const id = document.getElementById('p-id').value;
@@ -316,11 +324,11 @@
             let error;
             if (id) {
                 // Update Produk
-                const res = await supabase.from('products').update(productData).eq('id', parseInt(id));
+                const res = await db.from('products').update(productData).eq('id', parseInt(id));
                 error = res.error;
             } else {
                 // Tambah Produk Baru
-                const res = await supabase.from('products').insert([productData]);
+                const res = await db.from('products').insert([productData]);
                 error = res.error;
             }
 
@@ -341,7 +349,7 @@
             if (!product) return;
 
             if (confirm(`Yakin ingin menghapus produk "${product.title}"?`)) {
-                const { error } = await supabase.from('products').delete().eq('id', id);
+                const { error } = await db.from('products').delete().eq('id', id);
                 if (error) {
                     alert('Gagal menghapus: ' + error.message);
                 } else {
@@ -352,7 +360,7 @@
         }
 
         async function changeOrderStatus(orderId, newStatus) {
-            const { error } = await supabase
+            const { error } = await db
                 .from('orders')
                 .update({ status: newStatus })
                 .eq('id', orderId);
@@ -366,9 +374,8 @@
             }
         }
 
-        // 4. Supabase Realtime Listener (Otomatis Sync Data)
-        supabase
-            .channel('db-changes')
+        // 3. Realtime Supabase Listener
+        db.channel('db-changes-v2')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
                 await loadProducts();
                 refreshAllUI();
@@ -382,7 +389,7 @@
             })
             .subscribe();
 
-        // 5. Fungsi Render & UI Helpers
+        // 4. Render UI & Helper Functions
         function refreshAllUI() {
             renderAdminProductTable();
             renderOrdersTables();
@@ -565,8 +572,10 @@
             document.getElementById('addProductModal').classList.remove('hidden');
         }
 
-        // Jalankan Fetch Pertama Kali
-        fetchAllData();
+        // Eksekusi data awal
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchAllData();
+        });
     </script>
 </body>
 </html>
