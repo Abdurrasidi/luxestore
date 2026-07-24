@@ -44,145 +44,174 @@
         .interactive-btn:active { transform: scale(0.97); }
     </style>
 </head>
-<body class="bg-[#f8faf9] text-stitch-text font-sans antialiased min-h-screen flex flex-col md:flex-row">
+<body class="bg-[#f8faf9] text-stitch-text font-sans antialiased min-h-screen">
 
-    <!-- SIDEBAR NAVIGASI ADMIN -->
-    <aside class="w-full md:w-64 bg-stitch-sidebar text-white shrink-0 p-6 flex flex-col justify-between border-r border-slate-800">
-        <div class="space-y-8">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-black text-xl">L</div>
+    <!-- OVERLAY LOGIN ADMIN (Selalu tampil saat pertama kali buka atau refresh) -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-5 text-white">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 bg-brand rounded-2xl mx-auto flex items-center justify-center font-black text-2xl">L</div>
+                <h2 class="text-xl font-extrabold pt-2">Login Merchant Central</h2>
+                <p class="text-xs text-slate-400 font-mono-stitch">Masukkan kredensial admin Anda</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-3">
                 <div>
-                    <h2 class="font-extrabold text-sm tracking-wide">Merchant Central</h2>
-                    <p class="text-[10px] font-mono-stitch text-slate-400">LuxeStore Admin v2.5</p>
+                    <label class="text-[10px] font-mono-stitch font-bold text-slate-400 uppercase">Username</label>
+                    <input id="login-username" required type="text" placeholder="admin" class="w-full mt-1 p-3 bg-slate-900 text-white rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-brand"/>
                 </div>
-            </div>
-
-            <nav class="space-y-1 font-medium text-xs">
-                <button onclick="switchAdminTab('overview')" id="tab-overview" class="w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn">
-                    <span class="material-symbols-outlined text-lg">dashboard</span> Ringkasan
-                </button>
-                <button onclick="switchAdminTab('products')" id="tab-products" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn">
-                    <span class="material-symbols-outlined text-lg">inventory_2</span> Kelola Produk
-                </button>
-                <button onclick="switchAdminTab('orders')" id="tab-orders" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn flex justify-between">
-                    <span class="flex items-center gap-3"><span class="material-symbols-outlined text-lg">shopping_cart</span> Pesanan Masuk</span>
-                    <span id="badge-pending-orders" class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-black font-extrabold hidden">0</span>
-                </button>
-            </nav>
-        </div>
-
-        <div class="pt-6 border-t border-slate-800">
-            <a href="index.html" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 font-bold text-xs flex items-center gap-2 interactive-btn">
-                <span class="material-symbols-outlined text-base">logout</span> Keluar ke Toko
-            </a>
-        </div>
-    </aside>
-
-    <!-- KONTEN UTAMA DASHBOARD -->
-    <main class="flex-1 p-6 lg:p-10 space-y-8 overflow-y-auto">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stitch-border pb-6">
-            <div>
-                <h1 class="text-2xl font-black text-stitch-text" id="admin-page-title">Ringkasan Performa</h1>
-                <p class="text-xs font-mono-stitch text-stitch-muted mt-0.5">Pantau pendapatan, produk, dan pesanan kamu secara real-time.</p>
-            </div>
-            <button onclick="openAddProductModal()" class="px-4 py-2.5 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brand-dark interactive-btn flex items-center gap-2 shadow-md">
-                <span class="material-symbols-outlined text-base">add</span> + Tambah Produk Baru
-            </button>
-        </div>
-
-        <!-- SECTION 1: OVERVIEW METRICS -->
-        <div id="section-overview" class="space-y-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
-                    <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Total Pendapatan</span>
-                    <h3 class="text-2xl font-black text-stitch-text font-mono-stitch" id="stat-total-revenue">$0.00</h3>
-                    <p class="text-[11px] font-bold text-brand flex items-center gap-1"><span class="material-symbols-outlined text-xs">trending_up</span> Pesanan Selesai</p>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
-                    <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Total Pesanan</span>
-                    <h3 class="text-2xl font-black text-stitch-text font-mono-stitch" id="stat-total-orders">0 Pesanan</h3>
-                    <p class="text-[11px] font-bold text-amber-600" id="stat-pending-orders">0 Perlu Diproses</p>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
-                    <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Total Produk Aktif</span>
-                    <h3 class="text-2xl font-black text-stitch-text font-mono-stitch" id="stat-total-products">0 Produk</h3>
-                    <p class="text-[11px] text-stitch-muted">Di Katalog Real-time</p>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
-                    <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Peringatan Stok</span>
-                    <h3 class="text-2xl font-black text-red-500 font-mono-stitch" id="stat-low-stock">0 Produk</h3>
-                    <p class="text-[11px] font-bold text-red-500">Stok di bawah 3 unit!</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="font-extrabold text-base text-stitch-text">Pesanan Terbaru Masuk</h3>
-                    <button onclick="switchAdminTab('orders')" class="text-xs text-brand font-bold hover:underline">Lihat Semua Pesanan →</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs font-mono-stitch">
-                        <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
-                            <tr>
-                                <th class="p-3">ID PESANAN</th>
-                                <th class="p-3">PELANGGAN</th>
-                                <th class="p-3">TOTAL</th>
-                                <th class="p-3">STATUS</th>
-                                <th class="p-3">KET (PROSES ORDERAN)</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-stitch-border" id="admin-orders-quick-table"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECTION 2: KELOLA PRODUK -->
-        <div id="section-products" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
-                <h3 class="font-extrabold text-base text-stitch-text">Daftar Produk Toko</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs font-mono-stitch">
-                        <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
-                            <tr>
-                                <th class="p-3">PRODUK</th>
-                                <th class="p-3">KATEGORI</th>
-                                <th class="p-3">HARGA</th>
-                                <th class="p-3">STOK</th>
-                                <th class="p-3">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-product-table" class="divide-y divide-stitch-border"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECTION 3: PESANAN MASUK -->
-        <div id="section-orders" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
                 <div>
-                    <h3 class="font-extrabold text-base text-stitch-text">Semua Pesanan Masuk</h3>
-                    <p class="text-xs text-stitch-muted">Update keterangan proses pengerjaan untuk memperbarui status pembeli.</p>
+                    <label class="text-[10px] font-mono-stitch font-bold text-slate-400 uppercase">Password</label>
+                    <input id="login-password" required type="password" placeholder="••••••••" class="w-full mt-1 p-3 bg-slate-900 text-white rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-brand"/>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs font-mono-stitch">
-                        <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
-                            <tr>
-                                <th class="p-3">ID PESANAN</th>
-                                <th class="p-3">PELANGGAN</th>
-                                <th class="p-3">TANGGAL</th>
-                                <th class="p-3">TOTAL</th>
-                                <th class="p-3">STATUS SAAT INI</th>
-                                <th class="p-3">KET (PROSES ORDERAN ADMIN)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-orders-full-table" class="divide-y divide-stitch-border"></tbody>
-                    </table>
+                <div id="login-error" class="text-red-400 text-xs font-mono-stitch hidden text-center">Username atau Password salah!</div>
+                <button type="submit" class="w-full py-3.5 bg-brand hover:bg-brand-dark font-bold text-xs rounded-xl interactive-btn shadow-md">
+                    Masuk ke Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DASHBOARD CONTENT (Tersembunyi sampai Login Berhasil) -->
+    <div id="admin-dashboard-view" class="hidden min-h-screen flex flex-col md:flex-row">
+        <!-- SIDEBAR NAVIGASI ADMIN -->
+        <aside class="w-full md:w-64 bg-stitch-sidebar text-white shrink-0 p-6 flex flex-col justify-between border-r border-slate-800">
+            <div class="space-y-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-black text-xl">L</div>
+                    <div>
+                        <h2 class="font-extrabold text-sm tracking-wide">Merchant Central</h2>
+                        <p class="text-[10px] font-mono-stitch text-slate-400">LuxeStore Admin v2.5</p>
+                    </div>
+                </div>
+
+                <nav class="space-y-1 font-medium text-xs">
+                    <button onclick="switchAdminTab('overview')" id="tab-overview" class="w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn">
+                        <span class="material-symbols-outlined text-lg">dashboard</span> Ringkasan
+                    </button>
+                    <button onclick="switchAdminTab('products')" id="tab-products" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn">
+                        <span class="material-symbols-outlined text-lg">inventory_2</span> Kelola Produk
+                    </button>
+                    <button onclick="switchAdminTab('orders')" id="tab-orders" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn flex justify-between">
+                        <span class="flex items-center gap-3"><span class="material-symbols-outlined text-lg">shopping_cart</span> Pesanan Masuk</span>
+                        <span id="badge-pending-orders" class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-black font-extrabold hidden">0</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="pt-6 border-t border-slate-800">
+                <button onclick="handleLogout()" class="w-full text-left px-4 py-2.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 font-bold text-xs flex items-center gap-2 interactive-btn">
+                    <span class="material-symbols-outlined text-base">logout</span> Keluar (Logout)
+                </button>
+            </div>
+        </aside>
+
+        <!-- KONTEN UTAMA DASHBOARD -->
+        <main class="flex-1 p-6 lg:p-10 space-y-8 overflow-y-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stitch-border pb-6">
+                <div>
+                    <h1 class="text-2xl font-black text-stitch-text" id="admin-page-title">Ringkasan Performa</h1>
+                    <p class="text-xs font-mono-stitch text-stitch-muted mt-0.5">Pantau pendapatan, produk, dan pesanan kamu secara real-time.</p>
+                </div>
+                <button onclick="openAddProductModal()" class="px-4 py-2.5 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brand-dark interactive-btn flex items-center gap-2 shadow-md">
+                    <span class="material-symbols-outlined text-base">add</span> + Tambah Produk Baru
+                </button>
+            </div>
+
+            <!-- SECTION 1: OVERVIEW METRICS -->
+            <div id="section-overview" class="space-y-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
+                        <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Total Pendapatan</span>
+                        <h3 class="text-2xl font-black text-stitch-text font-mono-stitch" id="stat-total-revenue">$0.00</h3>
+                        <p class="text-[11px] font-bold text-brand flex items-center gap-1"><span class="material-symbols-outlined text-xs">trending_up</span> Pesanan Selesai</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
+                        <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Total Pesanan</span>
+                        <h3 class="text-2xl font-black text-stitch-text font-mono-stitch" id="stat-total-orders">0 Pesanan</h3>
+                        <p class="text-[11px] font-bold text-amber-600" id="stat-pending-orders">0 Perlu Diproses</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
+                        <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Total Produk Aktif</span>
+                        <h3 class="text-2xl font-black text-stitch-text font-mono-stitch" id="stat-total-products">0 Produk</h3>
+                        <p class="text-[11px] text-stitch-muted">Di Katalog Real-time</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
+                        <span class="text-[10px] font-mono-stitch font-bold text-stitch-muted uppercase">Peringatan Stok</span>
+                        <h3 class="text-2xl font-black text-red-500 font-mono-stitch" id="stat-low-stock">0 Produk</h3>
+                        <p class="text-[11px] font-bold text-red-500">Stok di bawah 3 unit!</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-extrabold text-base text-stitch-text">Pesanan Terbaru Masuk</h3>
+                        <button onclick="switchAdminTab('orders')" class="text-xs text-brand font-bold hover:underline">Lihat Semua Pesanan →</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono-stitch">
+                            <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
+                                <tr>
+                                    <th class="p-3">ID PESANAN</th>
+                                    <th class="p-3">PELANGGAN</th>
+                                    <th class="p-3">TOTAL</th>
+                                    <th class="p-3">STATUS</th>
+                                    <th class="p-3">KET (PROSES ORDERAN)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stitch-border" id="admin-orders-quick-table"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+
+            <!-- SECTION 2: KELOLA PRODUK -->
+            <div id="section-products" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
+                    <h3 class="font-extrabold text-base text-stitch-text">Daftar Produk Toko</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono-stitch">
+                            <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
+                                <tr>
+                                    <th class="p-3">PRODUK</th>
+                                    <th class="p-3">KATEGORI</th>
+                                    <th class="p-3">HARGA</th>
+                                    <th class="p-3">STOK</th>
+                                    <th class="p-3">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-product-table" class="divide-y divide-stitch-border"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: PESANAN MASUK -->
+            <div id="section-orders" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
+                    <div>
+                        <h3 class="font-extrabold text-base text-stitch-text">Semua Pesanan Masuk</h3>
+                        <p class="text-xs text-stitch-muted">Update keterangan proses pengerjaan untuk memperbarui status pembeli.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono-stitch">
+                            <thead class="bg-slate-100 border-b border-stitch-border text-stitch-muted">
+                                <tr>
+                                    <th class="p-3">ID PESANAN</th>
+                                    <th class="p-3">PELANGGAN</th>
+                                    <th class="p-3">TANGGAL</th>
+                                    <th class="p-3">TOTAL</th>
+                                    <th class="p-3">STATUS SAAT INI</th>
+                                    <th class="p-3">KET (PROSES ORDERAN ADMIN)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-orders-full-table" class="divide-y divide-stitch-border"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- MODAL TAMBAH / EDIT PRODUK -->
     <div id="addProductModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
@@ -242,6 +271,29 @@
         let adminProducts = [];
         let adminOrders = [];
 
+        // Kredensial Admin Sederhana
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "admin123";
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value;
+            const p = document.getElementById('login-password').value;
+
+            if (u === ADMIN_USER && p === ADMIN_PASS) {
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                document.getElementById('login-error').classList.add('hidden');
+                fetchAllData();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            window.location.reload();
+        }
+
         async function fetchAllData() {
             try {
                 await Promise.all([loadProducts(), loadOrders()]);
@@ -258,8 +310,12 @@
                 .select('*')
                 .order('id', { ascending: false });
 
-            if (error) console.error('Error fetching products:', error.message);
-            else adminProducts = data || [];
+            if (error) {
+                console.error('Error fetching products:', error.message);
+                alert('Gagal mengambil data produk dari Supabase. Pastikan RLS sudah dikonfigurasi!');
+            } else {
+                adminProducts = data || [];
+            }
         }
 
         async function loadOrders() {
@@ -546,8 +602,6 @@
                 `;
             });
         }
-
-        fetchAllData();
     </script>
 </body>
 </html>
