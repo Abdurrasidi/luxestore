@@ -247,15 +247,13 @@
         </div>
     </div>
 
-    <!-- LOGIKA JAVASCRIPT & SUPABASE INTEGRATION -->
+    <!-- LOGIKA JAVASCRIPT FIX SUPABASE -->
     <script>
-        // Gunakan pencocokan aman agar variabel 'supabaseClient' tidak pernah berkonflik
         const SUPABASE_URL = 'https://mmpufzzhumzgtkbsuuik.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_KZNxfS-6dYP4X1I16YLoAA_UeUPEcit';
         
-        // Buat instance unik untuk menghindari error "already been declared"
-        window.supabaseClient = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const db = window.supabaseClient;
+        // MENGGUNAKAN NAMA VARIABLE 'supabaseClient' AGAR TIDAK DEKLARASI UDAH (SYNTAX ERROR FIX)
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let adminProducts = [];
         let adminOrders = [];
@@ -265,14 +263,14 @@
             try {
                 await Promise.all([loadProducts(), loadOrders()]);
             } catch (err) {
-                console.error('Error saat memuat data awal:', err);
+                console.error('Gagal mengambil data:', err);
             } finally {
                 refreshAllUI();
             }
         }
 
         async function loadProducts() {
-            const { data, error } = await db
+            const { data, error } = await supabaseClient
                 .from('products')
                 .select('*')
                 .order('id', { ascending: false });
@@ -285,7 +283,7 @@
         }
 
         async function loadOrders() {
-            const { data, error } = await db
+            const { data, error } = await supabaseClient
                 .from('orders')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -323,12 +321,10 @@
 
             let error;
             if (id) {
-                // Update Produk
-                const res = await db.from('products').update(productData).eq('id', parseInt(id));
+                const res = await supabaseClient.from('products').update(productData).eq('id', parseInt(id));
                 error = res.error;
             } else {
-                // Tambah Produk Baru
-                const res = await db.from('products').insert([productData]);
+                const res = await supabaseClient.from('products').insert([productData]);
                 error = res.error;
             }
 
@@ -349,7 +345,7 @@
             if (!product) return;
 
             if (confirm(`Yakin ingin menghapus produk "${product.title}"?`)) {
-                const { error } = await db.from('products').delete().eq('id', id);
+                const { error } = await supabaseClient.from('products').delete().eq('id', id);
                 if (error) {
                     alert('Gagal menghapus: ' + error.message);
                 } else {
@@ -360,7 +356,7 @@
         }
 
         async function changeOrderStatus(orderId, newStatus) {
-            const { error } = await db
+            const { error } = await supabaseClient
                 .from('orders')
                 .update({ status: newStatus })
                 .eq('id', orderId);
@@ -374,8 +370,9 @@
             }
         }
 
-        // 3. Realtime Supabase Listener
-        db.channel('db-changes-v2')
+        // 3. Realtime Listener
+        supabaseClient
+            .channel('db-changes-v3')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
                 await loadProducts();
                 refreshAllUI();
@@ -389,7 +386,61 @@
             })
             .subscribe();
 
-        // 4. Render UI & Helper Functions
+        // 4. Navigation & UI Helpers (GLOBAL SCOPE)
+        function switchAdminTab(tab) {
+            document.getElementById('section-overview').classList.add('hidden');
+            document.getElementById('section-products').classList.add('hidden');
+            document.getElementById('section-orders').classList.add('hidden');
+
+            document.getElementById('tab-overview').className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn";
+            document.getElementById('tab-products').className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn";
+            document.getElementById('tab-orders').className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn flex justify-between";
+
+            if (tab === 'overview') {
+                document.getElementById('section-overview').classList.remove('hidden');
+                document.getElementById('tab-overview').className = "w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn";
+                document.getElementById('admin-page-title').innerText = "Ringkasan Performa";
+            } else if (tab === 'products') {
+                document.getElementById('section-products').classList.remove('hidden');
+                document.getElementById('tab-products').className = "w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn";
+                document.getElementById('admin-page-title').innerText = "Manajemen Produk";
+            } else if (tab === 'orders') {
+                document.getElementById('section-orders').classList.remove('hidden');
+                document.getElementById('tab-orders').className = "w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn flex justify-between";
+                document.getElementById('admin-page-title').innerText = "Pesanan Masuk";
+            }
+        }
+
+        function openAddProductModal() {
+            document.getElementById('p-id').value = '';
+            document.getElementById('modal-title').innerText = 'Tambah Produk Baru';
+            document.getElementById('modal-submit-btn').innerText = 'Simpan & Terbitkan Produk';
+            document.querySelector('#addProductModal form').reset();
+            document.getElementById('addProductModal').classList.remove('hidden');
+        }
+
+        function closeAddProductModal() { 
+            document.getElementById('addProductModal').classList.add('hidden'); 
+        }
+
+        function editProduct(id) {
+            const product = adminProducts.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('p-id').value = product.id;
+            document.getElementById('p-title').value = product.title;
+            document.getElementById('p-price').value = product.price;
+            document.getElementById('p-stock').value = product.stock;
+            document.getElementById('p-cat').value = product.category;
+            document.getElementById('p-img').value = product.image;
+            document.getElementById('p-desc').value = product.desc || '';
+
+            document.getElementById('modal-title').innerText = 'Edit Produk';
+            document.getElementById('modal-submit-btn').innerText = 'Simpan Perubahan';
+
+            document.getElementById('addProductModal').classList.remove('hidden');
+        }
+
         function refreshAllUI() {
             renderAdminProductTable();
             renderOrdersTables();
@@ -518,64 +569,8 @@
             });
         }
 
-        function switchAdminTab(tab) {
-            document.getElementById('section-overview').classList.add('hidden');
-            document.getElementById('section-products').classList.add('hidden');
-            document.getElementById('section-orders').classList.add('hidden');
-
-            document.getElementById('tab-overview').className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn";
-            document.getElementById('tab-products').className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn";
-            document.getElementById('tab-orders').className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 interactive-btn flex justify-between";
-
-            if (tab === 'overview') {
-                document.getElementById('section-overview').classList.remove('hidden');
-                document.getElementById('tab-overview').className = "w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn";
-                document.getElementById('admin-page-title').innerText = "Ringkasan Performa";
-            } else if (tab === 'products') {
-                document.getElementById('section-products').classList.remove('hidden');
-                document.getElementById('tab-products').className = "w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn";
-                document.getElementById('admin-page-title').innerText = "Manajemen Produk";
-            } else if (tab === 'orders') {
-                document.getElementById('section-orders').classList.remove('hidden');
-                document.getElementById('tab-orders').className = "w-full text-left px-4 py-3 rounded-xl bg-brand text-white font-bold flex items-center gap-3 interactive-btn flex justify-between";
-                document.getElementById('admin-page-title').innerText = "Pesanan Masuk";
-            }
-        }
-
-        function openAddProductModal() {
-            document.getElementById('p-id').value = '';
-            document.getElementById('modal-title').innerText = 'Tambah Produk Baru';
-            document.getElementById('modal-submit-btn').innerText = 'Simpan & Terbitkan Produk';
-            document.querySelector('#addProductModal form').reset();
-            document.getElementById('addProductModal').classList.remove('hidden');
-        }
-
-        function closeAddProductModal() { 
-            document.getElementById('addProductModal').classList.add('hidden'); 
-        }
-
-        function editProduct(id) {
-            const product = adminProducts.find(p => p.id === id);
-            if (!product) return;
-
-            document.getElementById('p-id').value = product.id;
-            document.getElementById('p-title').value = product.title;
-            document.getElementById('p-price').value = product.price;
-            document.getElementById('p-stock').value = product.stock;
-            document.getElementById('p-cat').value = product.category;
-            document.getElementById('p-img').value = product.image;
-            document.getElementById('p-desc').value = product.desc || '';
-
-            document.getElementById('modal-title').innerText = 'Edit Produk';
-            document.getElementById('modal-submit-btn').innerText = 'Simpan Perubahan';
-
-            document.getElementById('addProductModal').classList.remove('hidden');
-        }
-
-        // Eksekusi data awal
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchAllData();
-        });
+        // Mulai muat data saat halaman selesai dibaca
+        fetchAllData();
     </script>
 </body>
 </html>
