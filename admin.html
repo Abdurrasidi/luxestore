@@ -46,33 +46,33 @@
 </head>
 <body class="bg-[#f8faf9] text-stitch-text font-sans antialiased min-h-screen">
 
-    <!-- OVERLAY LOGIN ADMIN (Selalu tampil saat pertama kali buka atau refresh) -->
+    <!-- OVERLAY LOGIN ADMIN -->
     <div id="login-modal" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-5 text-white">
             <div class="text-center space-y-1">
                 <div class="w-12 h-12 bg-brand rounded-2xl mx-auto flex items-center justify-center font-black text-2xl">L</div>
                 <h2 class="text-xl font-extrabold pt-2">Login Merchant Central</h2>
-                <p class="text-xs text-slate-400 font-mono-stitch">Masukkan kredensial admin Anda</p>
+                <p class="text-xs text-slate-400 font-mono-stitch">Masuk dengan akun Supabase Auth</p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-3">
                 <div>
-                    <label class="text-[10px] font-mono-stitch font-bold text-slate-400 uppercase">Username</label>
-                    <input id="login-username" required type="text" placeholder="admin" class="w-full mt-1 p-3 bg-slate-900 text-white rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-brand"/>
+                    <label class="text-[10px] font-mono-stitch font-bold text-slate-400 uppercase">Email Admin</label>
+                    <input id="login-email" required type="email" placeholder="admin@luxestore.com" class="w-full mt-1 p-3 bg-slate-900 text-white rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-brand"/>
                 </div>
                 <div>
                     <label class="text-[10px] font-mono-stitch font-bold text-slate-400 uppercase">Password</label>
                     <input id="login-password" required type="password" placeholder="••••••••" class="w-full mt-1 p-3 bg-slate-900 text-white rounded-xl border border-slate-700 text-xs focus:outline-none focus:border-brand"/>
                 </div>
-                <div id="login-error" class="text-red-400 text-xs font-mono-stitch hidden text-center">Username atau Password salah!</div>
-                <button type="submit" class="w-full py-3.5 bg-brand hover:bg-brand-dark font-bold text-xs rounded-xl interactive-btn shadow-md">
+                <div id="login-error" class="text-red-400 text-xs font-mono-stitch hidden text-center"></div>
+                <button type="submit" id="login-submit-btn" class="w-full py-3.5 bg-brand hover:bg-brand-dark font-bold text-xs rounded-xl interactive-btn shadow-md">
                     Masuk ke Dashboard
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- DASHBOARD CONTENT (Tersembunyi sampai Login Berhasil) -->
+    <!-- DASHBOARD CONTENT -->
     <div id="admin-dashboard-view" class="hidden min-h-screen flex flex-col md:flex-row">
         <!-- SIDEBAR NAVIGASI ADMIN -->
         <aside class="w-full md:w-64 bg-stitch-sidebar text-white shrink-0 p-6 flex flex-col justify-between border-r border-slate-800">
@@ -81,7 +81,7 @@
                     <div class="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-black text-xl">L</div>
                     <div>
                         <h2 class="font-extrabold text-sm tracking-wide">Merchant Central</h2>
-                        <p class="text-[10px] font-mono-stitch text-slate-400">LuxeStore Admin v2.5</p>
+                        <p class="text-[10px] font-mono-stitch text-slate-400" id="admin-email-display">Admin Active</p>
                     </div>
                 </div>
 
@@ -271,27 +271,59 @@
         let adminProducts = [];
         let adminOrders = [];
 
-        // Kredensial Admin Sederhana
-        const ADMIN_USER = "admin";
-        const ADMIN_PASS = "admin123";
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('login-username').value;
-            const p = document.getElementById('login-password').value;
-
-            if (u === ADMIN_USER && p === ADMIN_PASS) {
-                document.getElementById('login-modal').classList.add('hidden');
-                document.getElementById('admin-dashboard-view').classList.remove('hidden');
-                document.getElementById('login-error').classList.add('hidden');
-                fetchAllData();
+        // Cek Session saat Halaman Dimuat
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                showDashboard(session.user.email);
             } else {
-                document.getElementById('login-error').classList.remove('hidden');
+                showLoginModal();
+            }
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            const submitBtn = document.getElementById('login-submit-btn');
+
+            errorDiv.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Memverifikasi...';
+
+            // Menggunakan Supabase Auth API
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Masuk ke Dashboard';
+
+            if (error) {
+                errorDiv.innerText = 'Gagal Login: ' + error.message;
+                errorDiv.classList.remove('hidden');
+            } else {
+                showDashboard(data.user.email);
             }
         }
 
-        function handleLogout() {
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
             window.location.reload();
+        }
+
+        function showDashboard(userEmail) {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('admin-dashboard-view').classList.remove('hidden');
+            document.getElementById('admin-email-display').innerText = userEmail;
+            fetchAllData();
+        }
+
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('admin-dashboard-view').classList.add('hidden');
         }
 
         async function fetchAllData() {
@@ -312,7 +344,6 @@
 
             if (error) {
                 console.error('Error fetching products:', error.message);
-                alert('Gagal mengambil data produk dari Supabase. Pastikan RLS sudah dikonfigurasi!');
             } else {
                 adminProducts = data || [];
             }
