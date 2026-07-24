@@ -50,7 +50,7 @@
     <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 max-w-md w-full rounded-3xl p-8 space-y-6 text-white shadow-2xl">
             <div class="text-center space-y-2">
-                <div class="w-12 h-12 rounded-2xl bg-brand text-white font-black text-2xl flex items-center justify-center mx-auto">L</div>
+                <div class="w-12 h-12 rounded-2xl bg-brand text-white font-black text-2xl flex items-center justify-center mx-auto shadow-lg shadow-brand/20">L</div>
                 <h2 class="text-xl font-bold">Admin Central Login</h2>
                 <p class="text-xs text-slate-400">Masukkan akun admin Supabase kamu untuk mengelola toko.</p>
             </div>
@@ -77,11 +77,11 @@
     <!-- SCREEN 2: DASHBOARD ADMIN UTAMA -->
     <div id="admin-dashboard" class="min-h-screen flex flex-col md:flex-row hidden">
 
-        <!-- SIDEBAR -->
+        <!-- SIDEBAR NAVIGASI ADMIN -->
         <aside class="w-full md:w-64 bg-stitch-sidebar text-white shrink-0 p-6 flex flex-col justify-between border-r border-slate-800">
             <div class="space-y-8">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-black text-xl">L</div>
+                    <div class="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-black text-xl shadow-md">L</div>
                     <div>
                         <h2 class="font-extrabold text-sm tracking-wide">Merchant Central</h2>
                         <p class="text-[10px] font-mono-stitch text-slate-400">LuxeStore Admin v2.5</p>
@@ -109,7 +109,7 @@
             </div>
         </aside>
 
-        <!-- KONTEN UTAMA -->
+        <!-- KONTEN UTAMA DASHBOARD -->
         <main class="flex-1 p-6 lg:p-10 space-y-8 overflow-y-auto">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stitch-border pb-6">
                 <div>
@@ -121,7 +121,7 @@
                 </button>
             </div>
 
-            <!-- SECTION 1: OVERVIEW -->
+            <!-- SECTION 1: OVERVIEW METRICS -->
             <div id="section-overview" class="space-y-8">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     <div class="bg-white p-5 rounded-2xl border border-stitch-border/80 shadow-2xs space-y-2">
@@ -160,7 +160,7 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: PRODUK -->
+            <!-- SECTION 2: KELOLA PRODUK -->
             <div id="section-products" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
                     <h3 class="font-extrabold text-base text-stitch-text">Daftar Produk Toko</h3>
@@ -181,7 +181,7 @@
                 </div>
             </div>
 
-            <!-- SECTION 3: PESANAN -->
+            <!-- SECTION 3: PESANAN MASUK -->
             <div id="section-orders" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl border border-stitch-border/80 space-y-4">
                     <h3 class="font-extrabold text-base text-stitch-text">Semua Pesanan Masuk</h3>
@@ -249,13 +249,12 @@
         </div>
     </div>
 
-    <!-- LOGIKA JAVASCRIPT HANYA DIDEKLARASIKAN 1 KALI -->
+    <!-- LOGIKA JAVASCRIPT BEBAS ERROR -->
     <script>
-        // Deklarasi Global tunggal
         const SUPABASE_URL = 'https://mmpufzzhumzgtkbsuuik.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_KZNxfS-6dYP4X1I16YLoAA_UeUPEcit';
         
-        // Inisialisasi Supabase tunggal
+        // Menggunakan variabel tunggal dbClient agar tidak terjadi redeclaration error
         const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let adminProducts = [];
@@ -457,7 +456,7 @@
             document.getElementById('addProductModal').classList.remove('hidden');
         }
 
-        // Cek sesi otomatis saat halaman selesai dimuat
+        // Jalankan pengecekan sesi otomatis
         window.addEventListener('DOMContentLoaded', checkSession);
     </script>
 </body>
